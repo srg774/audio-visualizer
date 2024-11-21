@@ -21,31 +21,71 @@
       background: #202020;
       border-radius: 10px;
     }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      cursor: pointer;
+      padding: 10px;
+      background: #333;
+      margin: 5px 0;
+      border-radius: 5px;
+      text-align: center;
+      transition: background 0.3s;
+    }
+    li:hover {
+      background: #444;
+    }
   </style>
 </head>
 <body>
   <h1>Audio Visualizer</h1>
-  <audio id="audio" controls>
-    <source src="./assets/Steves Ableton Track.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
+
+  <!-- Audio Player -->
+  <audio id="audio" controls></audio>
+
+  <!-- Visualizer -->
   <canvas id="visualizer" width="800" height="400"></canvas>
 
+  <!-- Playlist -->
+  <h2>Playlist</h2>
+  <ul id="playlist"></ul>
+
   <script>
+    // Track List
+    const tracks = [
+      { title: "Steves Ableton Track", src: "./assets/Steves Ableton Track.mp3" },
+      { title: "Nu One", src: "./assets/nuone.mp3" }
+    ];
+
     const audio = document.getElementById('audio');
     const canvas = document.getElementById('visualizer');
+    const playlist = document.getElementById('playlist');
     const ctx = canvas.getContext('2d');
 
-    // Create the AudioContext and AnalyserNode
+    // Populate Playlist
+    tracks.forEach((track, index) => {
+      const li = document.createElement('li');
+      li.textContent = track.title;
+      li.addEventListener('click', () => loadTrack(index));
+      playlist.appendChild(li);
+    });
+
+    // Function to Load and Play Track
+    function loadTrack(index) {
+      audio.src = tracks[index].src;
+      audio.play();
+    }
+
+    // Visualizer Setup
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
-
-    // Connect the <audio> element to the AudioContext
     const source = audioContext.createMediaElementSource(audio);
+
     source.connect(analyser);
     analyser.connect(audioContext.destination);
 
-    // Configure the AnalyserNode
     analyser.fftSize = 256;
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -53,13 +93,12 @@
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
 
-    // Function to draw the visualizer
     function draw() {
       requestAnimationFrame(draw);
 
       analyser.getByteFrequencyData(dataArray);
 
-      ctx.fillStyle = '#121212'; // Background color
+      ctx.fillStyle = '#121212';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
       const barWidth = (WIDTH / bufferLength) * 2.5;
@@ -73,27 +112,30 @@
         const green = 50;
         const blue = 150;
 
-        ctx.fillStyle = `rgb(${red},${green},${blue})`; // Dynamic bar color
+        ctx.fillStyle = `rgb(${red},${green},${blue})`;
         ctx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight / 2);
 
         x += barWidth + 1;
       }
     }
 
-    // Ensure the AudioContext resumes on user interaction
+    // Resume AudioContext on Play
     audio.addEventListener('play', () => {
       if (audioContext.state === 'suspended') {
         audioContext.resume();
       }
-      draw(); // Start the visualizer
+      draw();
     });
 
-    // Resume the visualizer after seeking or skipping
+    // Resume AudioContext after Seeking
     audio.addEventListener('seeked', () => {
       if (audioContext.state === 'suspended') {
         audioContext.resume();
       }
     });
+
+    // Load the first track by default
+    loadTrack(0);
   </script>
 </body>
 </html>
