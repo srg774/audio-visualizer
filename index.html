@@ -14,7 +14,7 @@
       justify-content: space-between;
       height: 100vh;
       margin: 0;
-      background: #000; /* Sleek black background */
+      background: #000; /* All-black background */
       color: white;
       font-family: 'Poppins', sans-serif;
     }
@@ -33,8 +33,9 @@
 
     .controls {
       display: flex;
-      gap: 10px;
-      margin: 10px 0;
+      align-items: center;
+      gap: 15px;
+      margin: 20px 0;
     }
 
     .controls button {
@@ -52,14 +53,27 @@
       background: #555;
     }
 
-    audio {
-      display: none; /* Hide the default audio player */
+    .seek-bar {
+      position: relative;
+      width: 80%;
+      height: 8px;
+      background: #444;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .seek-bar-progress {
+      height: 100%;
+      background: #00f;
+      width: 0%;
+      transition: width 0.1s;
     }
 
     canvas {
       display: block;
-      background: #1a1a1a;
-      border-radius: 50%; /* Circular visualizer */
+      background: transparent; /* Fully black background */
       width: 100%;
       height: 80vh; /* Maximize visualizer space */
     }
@@ -77,6 +91,11 @@
     <button id="prev-button">Previous</button>
     <button id="play-pause-button">Play</button>
     <button id="next-button">Next</button>
+  </div>
+
+  <!-- Seek Bar -->
+  <div class="seek-bar" id="seek-bar">
+    <div class="seek-bar-progress" id="seek-bar-progress"></div>
   </div>
 
   <!-- Hidden Audio Player -->
@@ -100,6 +119,8 @@
     const playPauseButton = document.getElementById('play-pause-button');
     const prevButton = document.getElementById('prev-button');
     const nextButton = document.getElementById('next-button');
+    const seekBar = document.getElementById('seek-bar');
+    const seekBarProgress = document.getElementById('seek-bar-progress');
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
 
@@ -135,6 +156,19 @@
       loadTrack(currentTrackIndex);
     });
 
+    // Seek Bar Update
+    audio.addEventListener('timeupdate', () => {
+      const progress = (audio.currentTime / audio.duration) * 100;
+      seekBarProgress.style.width = `${progress}%`;
+    });
+
+    // Seek Bar Interaction
+    seekBar.addEventListener('click', (e) => {
+      const rect = seekBar.getBoundingClientRect();
+      const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+      audio.currentTime = seekTime;
+    });
+
     // Visualizer Setup
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
@@ -159,14 +193,8 @@
 
       const centerX = WIDTH / 2;
       const centerY = HEIGHT / 2;
-      const radius = Math.min(WIDTH, HEIGHT) / 6; // Black hole radius
+      const radius = Math.min(WIDTH, HEIGHT) / 8; // Radius of inner circle
       const barCount = bufferLength;
-
-      // Black Hole
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-      ctx.fill();
 
       // Radial Bars
       for (let i = 0; i < barCount; i++) {
