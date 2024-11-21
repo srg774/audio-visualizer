@@ -14,7 +14,7 @@
       justify-content: space-between;
       height: 100vh;
       margin: 0;
-      background: #000; /* All-black background */
+      background: #000; /* Fully black background */
       color: white;
       font-family: 'Poppins', sans-serif;
     }
@@ -61,7 +61,7 @@
       border-radius: 4px;
       overflow: hidden;
       cursor: pointer;
-      margin-top: 10px;
+      margin: 10px 0;
     }
 
     .seek-bar-progress {
@@ -75,7 +75,7 @@
       display: block;
       background: transparent; /* Fully black background */
       width: 100%;
-      height: 80vh; /* Maximize visualizer space */
+      height: 70vh; /* Maximize visualizer space */
     }
   </style>
 </head>
@@ -193,17 +193,16 @@
 
       const centerX = WIDTH / 2;
       const centerY = HEIGHT / 2;
-      const radius = Math.min(WIDTH, HEIGHT) / 8; // Radius of inner circle
       const barCount = bufferLength;
 
       // Radial Bars
       for (let i = 0; i < barCount; i++) {
         const angle = (i / barCount) * 2 * Math.PI;
         const barHeight = dataArray[i] * 0.75;
-        const x1 = centerX + Math.cos(angle) * radius;
-        const y1 = centerY + Math.sin(angle) * radius;
-        const x2 = centerX + Math.cos(angle) * (radius + barHeight);
-        const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+        const x1 = centerX + Math.cos(angle) * 0; // Start at exact center
+        const y1 = centerY + Math.sin(angle) * 0; // Start at exact center
+        const x2 = centerX + Math.cos(angle) * barHeight;
+        const y2 = centerY + Math.sin(angle) * barHeight;
 
         ctx.strokeStyle = `rgb(${barHeight + 50}, 50, 200)`;
         ctx.lineWidth = 2;
