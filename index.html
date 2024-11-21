@@ -8,15 +8,15 @@
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
 
     body {
-      margin: 0;
-      background: #000;
-      color: white;
-      font-family: 'Poppins', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
       height: 100vh;
+      margin: 0;
+      background: #000;
+      color: white;
+      font-family: 'Poppins', sans-serif;
     }
 
     h1 {
@@ -26,7 +26,7 @@
     }
 
     h2 {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       font-weight: 500;
       margin: 10px 0;
     }
@@ -34,13 +34,13 @@
     .controls {
       display: flex;
       align-items: center;
-      gap: 20px;
-      margin-top: 20px;
+      gap: 15px;
+      margin: 20px 0;
     }
 
     .controls button {
       padding: 10px 20px;
-      background: #333;
+      background: #444;
       color: white;
       border: none;
       border-radius: 5px;
@@ -53,53 +53,81 @@
       background: #555;
     }
 
-    .seek-bar {
+    .seek-bar-container {
       position: relative;
       width: 80%;
       height: 10px;
-      background: #333;
+      margin: 15px 0;
+    }
+
+    .seek-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 10px;
+      background: #444;
       border-radius: 5px;
       overflow: hidden;
       cursor: pointer;
-      margin: 15px 0;
     }
 
     .seek-bar-progress {
       height: 100%;
-      background: #00f;
+      background: linear-gradient(90deg, #00f, #00bfff);
       width: 0%;
       transition: width 0.1s;
     }
 
+    .seek-bar-thumb {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 15px;
+      height: 15px;
+      background: #fff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+    }
+
     canvas {
-      background: transparent;
       display: block;
-      margin-top: 20px;
+      background: transparent;
       width: 100%;
-      height: 70%;
+      height: 70vh;
     }
   </style>
 </head>
 <body>
+  <!-- Title -->
   <h1>SRG774 &copy;</h1>
+
+  <!-- Current Track Display -->
   <h2 id="current-track">Now Playing: </h2>
 
+  <!-- Audio Player Controls -->
   <div class="controls">
     <button id="prev-button">Previous</button>
     <button id="play-pause-button">Play</button>
     <button id="next-button">Next</button>
   </div>
 
-  <div class="seek-bar" id="seek-bar">
-    <div class="seek-bar-progress" id="seek-bar-progress"></div>
+  <!-- Seek Bar -->
+  <div class="seek-bar-container">
+    <div class="seek-bar" id="seek-bar">
+      <div class="seek-bar-progress" id="seek-bar-progress"></div>
+      <div class="seek-bar-thumb" id="seek-bar-thumb"></div>
+    </div>
   </div>
 
-  <canvas id="visualizer"></canvas>
-
+  <!-- Hidden Audio Player -->
   <audio id="audio"></audio>
 
+  <!-- Visualizer -->
+  <canvas id="visualizer"></canvas>
+
   <script>
-    // Track List
     const tracks = [
       { title: "Steves Ableton Track", src: "assets/Steves Ableton Track.mp3" },
       { title: "Nu One", src: "assets/nuone.mp3" }
@@ -115,10 +143,10 @@
     const nextButton = document.getElementById('next-button');
     const seekBar = document.getElementById('seek-bar');
     const seekBarProgress = document.getElementById('seek-bar-progress');
+    const seekBarThumb = document.getElementById('seek-bar-thumb');
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
 
-    // Load and Play Track
     function loadTrack(index) {
       const track = tracks[index];
       audio.src = track.src;
@@ -126,7 +154,6 @@
       if (isPlaying) audio.play();
     }
 
-    // Play/Pause Functionality
     playPauseButton.addEventListener('click', () => {
       if (audio.paused) {
         audio.play();
@@ -139,7 +166,6 @@
       }
     });
 
-    // Next and Previous Buttons
     nextButton.addEventListener('click', () => {
       currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
       loadTrack(currentTrackIndex);
@@ -150,10 +176,10 @@
       loadTrack(currentTrackIndex);
     });
 
-    // Seek Bar Updates
     audio.addEventListener('timeupdate', () => {
       const progress = (audio.currentTime / audio.duration) * 100;
       seekBarProgress.style.width = `${progress}%`;
+      seekBarThumb.style.left = `${progress}%`;
     });
 
     seekBar.addEventListener('click', (e) => {
@@ -162,51 +188,9 @@
       audio.currentTime = seekTime;
     });
 
-    // Visualizer Setup
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audio);
-
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
-
-    analyser.fftSize = 512;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    function draw() {
-      requestAnimationFrame(draw);
-      analyser.getByteFrequencyData(dataArray);
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = Math.min(canvas.width, canvas.height) / 4;
-
-      for (let i = 0; i < bufferLength; i++) {
-        const angle = (i / bufferLength) * 2 * Math.PI;
-        const barLength = radius + dataArray[i] / 2;
-
-        const xStart = centerX + Math.cos(angle) * radius;
-        const yStart = centerY + Math.sin(angle) * radius;
-
-        const xEnd = centerX + Math.cos(angle) * barLength;
-        const yEnd = centerY + Math.sin(angle) * barLength;
-
-        ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(xStart, yStart);
-        ctx.lineTo(xEnd, yEnd);
-        ctx.stroke();
-      }
-    }
-
-    // Resume Visualizer and Load First Track
-    audio.addEventListener('play', () => {
-      if (audioContext.state === 'suspended') audioContext.resume();
-      draw();
+    audio.addEventListener('loadedmetadata', () => {
+      seekBarThumb.style.left = '0%';
+      seekBarProgress.style.width = '0%';
     });
 
     loadTrack(currentTrackIndex);
