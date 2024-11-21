@@ -31,9 +31,14 @@
       margin: 10px 0;
     }
 
-    button {
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .controls button {
       padding: 10px 20px;
-      margin: 10px;
       background: #444;
       color: white;
       border: none;
@@ -43,7 +48,7 @@
       transition: background 0.3s;
     }
 
-    button:hover {
+    .controls button:hover {
       background: #555;
     }
 
@@ -54,7 +59,7 @@
     canvas {
       display: block;
       background: #1a1a1a;
-      border-radius: 15px;
+      border-radius: 50%; /* Circular visualizer */
       width: 100%;
       height: 80vh; /* Maximize visualizer space */
     }
@@ -67,11 +72,15 @@
   <!-- Current Track Display -->
   <h2 id="current-track">Now Playing: </h2>
 
-  <!-- Hidden Audio Player -->
-  <audio id="audio" controls></audio>
+  <!-- Audio Player Controls -->
+  <div class="controls">
+    <button id="prev-button">Previous</button>
+    <button id="play-pause-button">Play</button>
+    <button id="next-button">Next</button>
+  </div>
 
-  <!-- Next Button -->
-  <button id="next-button">Next Track</button>
+  <!-- Hidden Audio Player -->
+  <audio id="audio"></audio>
 
   <!-- Visualizer -->
   <canvas id="visualizer"></canvas>
@@ -84,9 +93,12 @@
     ];
 
     let currentTrackIndex = 0;
+    let isPlaying = false;
 
     const audio = document.getElementById('audio');
     const currentTrack = document.getElementById('current-track');
+    const playPauseButton = document.getElementById('play-pause-button');
+    const prevButton = document.getElementById('prev-button');
     const nextButton = document.getElementById('next-button');
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
@@ -96,12 +108,30 @@
       const track = tracks[index];
       audio.src = track.src;
       currentTrack.textContent = `Now Playing: ${track.title}`;
-      audio.play();
+      if (isPlaying) audio.play();
     }
 
-    // "Next" Button Click Event
+    // Play/Pause Functionality
+    playPauseButton.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play();
+        isPlaying = true;
+        playPauseButton.textContent = 'Pause';
+      } else {
+        audio.pause();
+        isPlaying = false;
+        playPauseButton.textContent = 'Play';
+      }
+    });
+
+    // Next and Previous Button Functionality
     nextButton.addEventListener('click', () => {
-      currentTrackIndex = (currentTrackIndex + 1) % tracks.length; // Loop to first track after the last one
+      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+      loadTrack(currentTrackIndex);
+    });
+
+    prevButton.addEventListener('click', () => {
+      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
       loadTrack(currentTrackIndex);
     });
 
@@ -113,14 +143,13 @@
     source.connect(analyser);
     analyser.connect(audioContext.destination);
 
-    analyser.fftSize = 512; // Increase FFT size for more bars
+    analyser.fftSize = 512;
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
 
-    // Function to Draw Dynamic Visualizer
     function draw() {
       requestAnimationFrame(draw);
 
@@ -128,12 +157,18 @@
 
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-      // Center point for radial bars
       const centerX = WIDTH / 2;
       const centerY = HEIGHT / 2;
-      const radius = Math.min(WIDTH, HEIGHT) / 4; // Dynamic radius
+      const radius = Math.min(WIDTH, HEIGHT) / 6; // Black hole radius
       const barCount = bufferLength;
 
+      // Black Hole
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Radial Bars
       for (let i = 0; i < barCount; i++) {
         const angle = (i / barCount) * 2 * Math.PI;
         const barHeight = dataArray[i] * 0.75;
@@ -142,12 +177,7 @@
         const x2 = centerX + Math.cos(angle) * (radius + barHeight);
         const y2 = centerY + Math.sin(angle) * (radius + barHeight);
 
-        // Gradient color
-        const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-        gradient.addColorStop(0, `rgb(${dataArray[i] + 50}, 50, 200)`);
-        gradient.addColorStop(1, `rgb(50, 200, ${dataArray[i] + 50})`);
-
-        ctx.strokeStyle = gradient;
+        ctx.strokeStyle = `rgb(${barHeight + 50}, 50, 200)`;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -161,7 +191,7 @@
       if (audioContext.state === 'suspended') {
         audioContext.resume();
       }
-      draw(); // Start the visualizer
+      draw();
     });
 
     // Load the first track by default
