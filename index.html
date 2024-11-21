@@ -21,20 +21,17 @@
       background: #202020;
       border-radius: 10px;
     }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      cursor: pointer;
-      padding: 10px;
+    button {
+      padding: 10px 20px;
+      margin: 10px;
       background: #333;
-      margin: 5px 0;
+      color: white;
+      border: none;
       border-radius: 5px;
-      text-align: center;
+      cursor: pointer;
       transition: background 0.3s;
     }
-    li:hover {
+    button:hover {
       background: #444;
     }
   </style>
@@ -42,41 +39,46 @@
 <body>
   <h1>Audio Visualizer</h1>
 
+  <!-- Display Current Track -->
+  <h2 id="current-track">Now Playing: </h2>
+
   <!-- Audio Player -->
   <audio id="audio" controls></audio>
+
+  <!-- Next Button -->
+  <button id="next-button">Next Track</button>
 
   <!-- Visualizer -->
   <canvas id="visualizer" width="800" height="400"></canvas>
 
-  <!-- Playlist -->
-  <h2>Playlist</h2>
-  <ul id="playlist"></ul>
-
   <script>
     // Track List
     const tracks = [
-      { title: "Steves Ableton Track", src: "./assets/Steves Ableton Track.mp3" },
-      { title: "Nu One", src: "./assets/nuone.mp3" }
+      { title: "Steves Ableton Track", src: "assets/Steves Ableton Track.mp3" },
+      { title: "Nu One", src: "assets/nuone.mp3" }
     ];
 
-    const audio = document.getElementById('audio');
-    const canvas = document.getElementById('visualizer');
-    const playlist = document.getElementById('playlist');
-    const ctx = canvas.getContext('2d');
+    let currentTrackIndex = 0;
 
-    // Populate Playlist
-    tracks.forEach((track, index) => {
-      const li = document.createElement('li');
-      li.textContent = track.title;
-      li.addEventListener('click', () => loadTrack(index));
-      playlist.appendChild(li);
-    });
+    const audio = document.getElementById('audio');
+    const currentTrack = document.getElementById('current-track');
+    const nextButton = document.getElementById('next-button');
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
 
     // Function to Load and Play Track
     function loadTrack(index) {
-      audio.src = tracks[index].src;
+      const track = tracks[index];
+      audio.src = track.src;
+      currentTrack.textContent = `Now Playing: ${track.title}`;
       audio.play();
     }
+
+    // "Next" Button Click Event
+    nextButton.addEventListener('click', () => {
+      currentTrackIndex = (currentTrackIndex + 1) % tracks.length; // Loop to first track after the last one
+      loadTrack(currentTrackIndex);
+    });
 
     // Visualizer Setup
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -127,15 +129,8 @@
       draw();
     });
 
-    // Resume AudioContext after Seeking
-    audio.addEventListener('seeked', () => {
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-    });
-
     // Load the first track by default
-    loadTrack(0);
+    loadTrack(currentTrackIndex);
   </script>
 </body>
 </html>
