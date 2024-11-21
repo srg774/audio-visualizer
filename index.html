@@ -100,20 +100,15 @@
   </style>
 </head>
 <body>
-  <!-- Title -->
   <h1>SRG774 &copy;</h1>
+  <h2 id="current-track">Now Playing:</h2>
 
-  <!-- Current Track Display -->
-  <h2 id="current-track">Now Playing: </h2>
-
-  <!-- Audio Player Controls -->
   <div class="controls">
     <button id="prev-button">Previous</button>
     <button id="play-pause-button">Play</button>
     <button id="next-button">Next</button>
   </div>
 
-  <!-- Seek Bar -->
   <div class="seek-bar-container">
     <div class="seek-bar" id="seek-bar">
       <div class="seek-bar-progress" id="seek-bar-progress"></div>
@@ -121,10 +116,7 @@
     </div>
   </div>
 
-  <!-- Hidden Audio Player -->
   <audio id="audio"></audio>
-
-  <!-- Visualizer -->
   <canvas id="visualizer"></canvas>
 
   <script>
@@ -146,6 +138,22 @@
     const seekBarThumb = document.getElementById('seek-bar-thumb');
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaElementSource(audio);
+
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
 
     function loadTrack(index) {
       const track = tracks[index];
@@ -188,11 +196,44 @@
       audio.currentTime = seekTime;
     });
 
-    audio.addEventListener('loadedmetadata', () => {
-      seekBarThumb.style.left = '0%';
-      seekBarProgress.style.width = '0%';
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+
+      analyser.getByteFrequencyData(dataArray);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = Math.min(centerX, centerY) * 0.6;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const angle = (i / bufferLength) * 2 * Math.PI;
+        const barHeight = (dataArray[i] / 255) * radius;
+
+        const x1 = centerX + Math.cos(angle) * radius;
+        const y1 = centerY + Math.sin(angle) * radius;
+        const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+        const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+
+        ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+    }
+
+    audio.addEventListener('play', () => {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      drawVisualizer();
     });
 
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
     loadTrack(currentTrackIndex);
   </script>
 </body>
