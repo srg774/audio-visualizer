@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Player with Visualizer</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #121212;
+      color: white;
+    }
+    canvas {
+      display: block;
+      margin: 20px auto;
+      background: #202020;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Audio Visualizer</h1>
+  <audio id="audio" controls>
+    <source src="./assets/Steves Ableton Track.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <canvas id="visualizer" width="800" height="400"></canvas>
+
+  <script>
+    const audio = document.getElementById('audio');
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+
+    // Create the AudioContext and AnalyserNode
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+
+    // Connect the <audio> element to the AudioContext
+    const source = audioContext.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+
+    // Configure the AnalyserNode
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    const WIDTH = canvas.width;
+    const HEIGHT = canvas.height;
+
+    // Function to draw the visualizer
+    function draw() {
+      requestAnimationFrame(draw);
+
+      analyser.getByteFrequencyData(dataArray);
+
+      ctx.fillStyle = '#121212'; // Background color
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      const barWidth = (WIDTH / bufferLength) * 2.5;
+      let barHeight;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        barHeight = dataArray[i];
+
+        const red = barHeight + 25;
+        const green = 50;
+        const blue = 150;
+
+        ctx.fillStyle = `rgb(${red},${green},${blue})`; // Dynamic bar color
+        ctx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight / 2);
+
+        x += barWidth + 1;
+      }
+    }
+
+    // Ensure the AudioContext resumes on user interaction
+    audio.addEventListener('play', () => {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      draw(); // Start the visualizer
+    });
+
+    // Resume the visualizer after seeking or skipping
+    audio.addEventListener('seeked', () => {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    });
+  </script>
+</body>
+</html>
