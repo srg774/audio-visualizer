@@ -1,7 +1,7 @@
+# SRG774 Web Audio Player
 
+https://srg774.github.io/audio-visualizer/
 
-
-SRG774 Web Audio Player
 This project is a web-based audio player featuring a custom interface with a built-in visualizer and track controls. The player allows users to play, pause, and switch between tracks, with a visually appealing frequency bar that reacts to the music. It includes a custom seek bar for easy navigation through tracks.
 
 Features:
@@ -17,4 +17,7 @@ Setup:
 Clone this repository.
 Open index.html in your browser.
 Enjoy listening to your favorite tracks with dynamic visual effects!
+
+New track Insert format: 
+
 { title: "New Track Name", src: "assets/newtrack.mp3" }
