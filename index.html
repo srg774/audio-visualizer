@@ -132,7 +132,8 @@
       { title: "Waves", src: "assets/waves.wav" }
     ];
 
-    let currentTrackIndex = 0;
+    // Pick a random track on page load
+    let currentTrackIndex = Math.floor(Math.random() * tracks.length);
     let isPlaying = false;
 
     const audio = document.getElementById('audio');
