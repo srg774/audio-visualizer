@@ -8,7 +8,7 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "/",
+  "start_url": "https://srg774.github.io/audio-visualizer/",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"
