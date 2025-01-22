@@ -1,6 +1,6 @@
 # License for Tracks in the `assets` Folder
 
-The MP3 files in the `assets` folder of this repository are original works by **srg774**.
+The files in the `assets` folder of this repository are original works by **srg774**.
 
 ## Allowed Uses
 1. You may listen to the tracks for personal enjoyment.
