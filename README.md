@@ -18,7 +18,7 @@ Clone this repository.
 Open index.html in your browser.
 Enjoy listening to your favorite tracks with dynamic visual effects!
 
-New-
+New -
 This project includes Bluetooth media control functionality, allowing you to skip tracks, play/pause, and navigate audio seamlessly using car controls or other connected devices.
 
 New track Insert format: 
