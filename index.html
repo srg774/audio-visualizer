@@ -3,39 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title></title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Website</title>
-
-    <!-- Open Graph meta tags -->
-    <meta property="og:title" content="srg774's Music">
-    <meta property="og:description" content="Showcasing my original tracks">
-    <meta property="og:image" content="assets/android-chrome-512x512.png">
-    <meta property="og:url" content="https://srg774.github.io/audio-visualizer/">
-    <meta property="og:type" content="website">
-
-    <!-- Favicon for general browsers -->
-    <link rel="icon" type="image/png" sizes="512x512" href="assets/android-chrome-512x512.png">
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" sizes="512x512" href="assets/android-chrome-512x512.png">
-    <!-- Android/Chrome Manifest -->
-    <link rel="manifest" href="manifest.json">
+  <title>SRG774 Music</title>
+  <meta property="og:title" content="srg774's Music">
+  <meta property="og:description" content="Showcasing my original tracks">
+  <meta property="og:image" content="assets/android-chrome-512x512.png">
+  <meta property="og:url" content="https://srg774.github.io/audio-visualizer/">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="assets/android-chrome-512x512.png">
+  <link rel="manifest" href="manifest.json">
   <style>
+    /* Your existing CSS styles */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
-
 
     body {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center; /* Center everything vertically */
+      justify-content: center;
       height: 100vh;
       margin: 0;
       background: #000;
       color: white;
       font-family: 'Poppins', sans-serif;
-      text-align: center; /* Ensure text is centered horizontally */
+      text-align: center;
     }
 
     h1 {
@@ -49,7 +40,7 @@
       font-weight: 500;
       margin: 10px 0;
       display: inline-block;
-      margin-bottom: 20px; /* Space between track name and controls */
+      margin-bottom: 20px;
     }
 
     .controls {
@@ -150,7 +141,6 @@
       { title: "Pulse", src: "assets/Pulse_.wav" }
     ];
 
-    // Pick a random track on page load
     let currentTrackIndex = Math.floor(Math.random() * tracks.length);
     let isPlaying = false;
 
@@ -261,10 +251,38 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
     loadTrack(currentTrackIndex);
+
+    // Media Session API for Bluetooth Controls
+    if ('mediaSession' in navigator) {
+      function updateMediaSession() {
+        const track = tracks[currentTrackIndex];
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: track.title,
+          artist: 'SRG774',
+          album: 'My Playlist',
+          artwork: [
+            { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
+          ]
+        });
+      }
+
+      navigator.mediaSession.setActionHandler('play', () => audio.play());
+      navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        prevButton.click();
+        updateMediaSession();
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        nextButton.click();
+        updateMediaSession();
+      });
+
+      audio.addEventListener('play', updateMediaSession);
+      audio.addEventListener('loadedmetadata', updateMediaSession);
+    }
   </script>
   <footer>
-  <p>SRG774 ©</p>
-</footer>
-
+    <p>SRG774 ©</p>
+  </footer>
 </body>
 </html>
