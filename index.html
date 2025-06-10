@@ -157,11 +157,16 @@
     const ctx = canvas.getContext('2d');
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audio);
+    let audioSourceConnected = false; // Flag to ensure source is connected only once
 
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
+    function connectAudioSource() {
+        if (!audioSourceConnected) {
+            const source = audioContext.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            audioSourceConnected = true;
+        }
+    }
 
     analyser.fftSize = 256;
     const bufferLength = analyser.frequencyBinCount;
@@ -176,30 +181,62 @@
       const track = tracks[index];
       audio.src = track.src;
       currentTrack.textContent = `Now Playing: ${track.title}`;
-      if (isPlaying) audio.play();
+      // Do NOT call audio.play() here directly anymore, especially not on initial load
+      // The user's click will handle starting playback.
+      playPauseButton.textContent = 'Play'; // Ensure button shows "Play" when a new track is loaded
+      isPlaying = false; // Ensure internal state is "paused" initially
       updateMediaSession(); // Update media session info when track changes
     }
 
     playPauseButton.addEventListener('click', () => {
-      if (audio.paused) {
-        audio.play();
-        isPlaying = true;
-        playPauseButton.textContent = 'Pause';
+      // Ensure AudioContext is resumed/started on first user interaction
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+            console.log('AudioContext resumed!');
+            connectAudioSource(); // Connect source only after user interaction and context resumed
+            if (audio.paused) {
+                audio.play();
+                isPlaying = true;
+                playPauseButton.textContent = 'Pause';
+            } else {
+                audio.pause();
+                isPlaying = false;
+                playPauseButton.textContent = 'Play';
+            }
+        });
       } else {
-        audio.pause();
-        isPlaying = false;
-        playPauseButton.textContent = 'Play';
+          // If AudioContext is already running
+          if (!audioSourceConnected) { // Connect if not yet connected
+              connectAudioSource();
+          }
+          if (audio.paused) {
+              audio.play();
+              isPlaying = true;
+              playPauseButton.textContent = 'Pause';
+          } else {
+              audio.pause();
+              isPlaying = false;
+              playPauseButton.textContent = 'Play';
+          }
       }
     });
 
     nextButton.addEventListener('click', () => {
       currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
       loadTrack(currentTrackIndex);
+      // If currently playing, attempt to play the next track (browser might still require interaction)
+      if (isPlaying) {
+          audio.play().catch(e => console.log('Autoplay for next track failed:', e.message));
+      }
     });
 
     prevButton.addEventListener('click', () => {
       currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
       loadTrack(currentTrackIndex);
+      // If currently playing, attempt to play the previous track
+      if (isPlaying) {
+          audio.play().catch(e => console.log('Autoplay for previous track failed:', e.message));
+      }
     });
 
     audio.addEventListener('timeupdate', () => {
@@ -215,40 +252,42 @@
     });
 
     function drawVisualizer() {
-      requestAnimationFrame(drawVisualizer);
+      // Only draw if audioContext is running and has a source connected
+      if (audioContext.state === 'running' && audioSourceConnected) {
+          requestAnimationFrame(drawVisualizer);
+          analyser.getByteFrequencyData(dataArray);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      analyser.getByteFrequencyData(dataArray);
+          const centerX = canvas.width / 2;
+          const centerY = canvas.height / 2;
+          const radius = Math.min(centerX, centerY) * 0.6;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+          for (let i = 0; i < bufferLength; i++) {
+            const angle = (i / bufferLength) * 2 * Math.PI;
+            const barHeight = (dataArray[i] / 255) * radius;
 
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = Math.min(centerX, centerY) * 0.6;
+            const x1 = centerX + Math.cos(angle) * radius;
+            const y1 = centerY + Math.sin(angle) * radius;
+            const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+            const y2 = centerY + Math.sin(angle) * (radius + barHeight);
 
-      for (let i = 0; i < bufferLength; i++) {
-        const angle = (i / bufferLength) * 2 * Math.PI;
-        const barHeight = (dataArray[i] / 255) * radius;
-
-        const x1 = centerX + Math.cos(angle) * radius;
-        const y1 = centerY + Math.sin(angle) * radius;
-        const x2 = centerX + Math.cos(angle) * (radius + barHeight);
-        const y2 = centerY + Math.sin(angle) * (radius + barHeight);
-
-        ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
+            ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+          }
       }
     }
 
+    // Call drawVisualizer whenever playback starts, but only if context is running
     audio.addEventListener('play', () => {
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
+      if (audioContext.state === 'running') { // Ensure context is running before drawing
+        drawVisualizer();
       }
-      drawVisualizer();
     });
+
 
     audio.addEventListener('ended', () => {
       let newTrackIndex;
@@ -257,8 +296,9 @@
       } while (newTrackIndex === currentTrackIndex); // Ensure it's not the same song again
 
       currentTrackIndex = newTrackIndex;
-      loadTrack(currentTrackIndex); // Load the new random track
-      audio.play(); // Start playing the new track immediately
+      loadTrack(currentTrackIndex);
+      // Attempt to play next song (this might also fail if user hasn't fully interacted recently)
+      audio.play().catch(e => console.log('Autoplay for ended track failed:', e.message));
     });
 
     window.addEventListener('resize', resizeCanvas);
@@ -278,8 +318,26 @@
         });
       }
 
-      navigator.mediaSession.setActionHandler('play', () => audio.play());
-      navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+      navigator.mediaSession.setActionHandler('play', () => {
+        // Resume context and play on media session interaction
+        if (audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                connectAudioSource();
+                audio.play();
+                isPlaying = true;
+                playPauseButton.textContent = 'Pause';
+            });
+        } else {
+            audio.play();
+            isPlaying = true;
+            playPauseButton.textContent = 'Pause';
+        }
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audio.pause();
+        isPlaying = false;
+        playPauseButton.textContent = 'Play';
+      });
       navigator.mediaSession.setActionHandler('previoustrack', () => {
         prevButton.click();
       });
@@ -291,7 +349,7 @@
       audio.addEventListener('loadedmetadata', updateMediaSession);
     }
 
-    // --- NEW CODE FOR SHARING VIA URL ---
+    // --- REVISED CODE FOR SHARING VIA URL ---
     function getQueryParam(name) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(name);
@@ -303,10 +361,11 @@
       const foundIndex = tracks.findIndex(track => track.title.toLowerCase() === trackTitleFromUrl.toLowerCase());
       if (foundIndex !== -1) {
         currentTrackIndex = foundIndex;
-        loadTrack(currentTrackIndex);
-        audio.play(); // Autoplay the specific song
-        isPlaying = true; // Update play state
-        playPauseButton.textContent = 'Pause'; // Update button text
+        loadTrack(currentTrackIndex); // Load the specific track
+        // IMPORTANT: Do NOT call audio.play() here directly.
+        // The user will need to click the "Play" button.
+        playPauseButton.textContent = 'Play'; // Ensure the button reflects "Play" state
+        isPlaying = false; // Reflect the paused state
       } else {
         // If track not found, load a random one as a fallback
         loadTrack(currentTrackIndex);
@@ -315,7 +374,14 @@
       // If no track parameter, load a random one initially
       loadTrack(currentTrackIndex);
     }
-    // --- END NEW CODE ---
+
+    // Initialize the visualizer if audio is already playing (e.g., if a track ends and the next auto-plays)
+    if (audio.paused) {
+        // Visualizer won't run until audio.play() is called from a user interaction
+    } else {
+        drawVisualizer(); // Start visualizer if audio is already playing (less likely on initial load)
+    }
+    // --- END REVISED CODE ---
   </script>
   <footer>
     <p>SRG774 ©</p>
