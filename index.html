@@ -206,6 +206,17 @@
       seekBarProgress.style.width = `${progress}%`;
       seekBarThumb.style.left = `${progress}%`;
     });
+    audio.addEventListener('ended', () => {
+  // Play a new random song when the current one ends
+  let newTrackIndex;
+  do {
+    newTrackIndex = Math.floor(Math.random() * tracks.length);
+  } while (newTrackIndex === currentTrackIndex); // Ensure it's not the same song again
+
+  currentTrackIndex = newTrackIndex;
+  loadTrack(currentTrackIndex); // Load the new random track
+  audio.play(); // Start playing the new track immediately
+});
 
     seekBar.addEventListener('click', (e) => {
       const rect = seekBar.getBoundingClientRect();
