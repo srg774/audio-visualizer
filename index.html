@@ -157,11 +157,15 @@
     const ctx = canvas.getContext('2d');
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    // Declare analyser and source here, at the top of the script scope
+    const analyser = audioContext.createAnalyser();
+    // Source is created but not connected yet
+    const source = audioContext.createMediaElementSource(audio);
+
     let audioSourceConnected = false; // Flag to ensure source is connected only once
 
     function connectAudioSource() {
         if (!audioSourceConnected) {
-            const source = audioContext.createMediaElementSource(audio);
             source.connect(analyser);
             analyser.connect(audioContext.destination);
             audioSourceConnected = true;
@@ -181,8 +185,6 @@
       const track = tracks[index];
       audio.src = track.src;
       currentTrack.textContent = `Now Playing: ${track.title}`;
-      // Do NOT call audio.play() here directly anymore, especially not on initial load
-      // The user's click will handle starting playback.
       playPauseButton.textContent = 'Play'; // Ensure button shows "Play" when a new track is loaded
       isPlaying = false; // Ensure internal state is "paused" initially
       updateMediaSession(); // Update media session info when track changes
@@ -376,11 +378,9 @@
     }
 
     // Initialize the visualizer if audio is already playing (e.g., if a track ends and the next auto-plays)
-    if (audio.paused) {
-        // Visualizer won't run until audio.play() is called from a user interaction
-    } else {
-        drawVisualizer(); // Start visualizer if audio is already playing (less likely on initial load)
-    }
+    // This part will primarily rely on the user interacting with the "Play" button first.
+    // The drawVisualizer will be triggered by the 'play' event listener on the audio element.
+    // No direct call to drawVisualizer here on initial load.
     // --- END REVISED CODE ---
   </script>
   <footer>
