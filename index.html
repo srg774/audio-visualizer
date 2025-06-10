@@ -30,7 +30,7 @@
     }
 
     h1 {
-      font-size: 0rem;
+      font-size: 0rem; /* This makes it invisible, was this intentional? */
       font-weight: 700;
       margin-top: 20px;
     }
@@ -177,6 +177,7 @@
       audio.src = track.src;
       currentTrack.textContent = `Now Playing: ${track.title}`;
       if (isPlaying) audio.play();
+      updateMediaSession(); // Update media session info when track changes
     }
 
     playPauseButton.addEventListener('click', () => {
@@ -249,7 +250,6 @@
       drawVisualizer();
     });
 
-    // --- ADDED CODE FOR AUTOPLAY NEXT RANDOM SONG ---
     audio.addEventListener('ended', () => {
       let newTrackIndex;
       do {
@@ -260,11 +260,9 @@
       loadTrack(currentTrackIndex); // Load the new random track
       audio.play(); // Start playing the new track immediately
     });
-    // --- END OF ADDED CODE ---
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-    loadTrack(currentTrackIndex);
 
     // Media Session API for Bluetooth Controls
     if ('mediaSession' in navigator) {
@@ -284,16 +282,40 @@
       navigator.mediaSession.setActionHandler('pause', () => audio.pause());
       navigator.mediaSession.setActionHandler('previoustrack', () => {
         prevButton.click();
-        updateMediaSession();
       });
       navigator.mediaSession.setActionHandler('nexttrack', () => {
         nextButton.click();
-        updateMediaSession();
       });
 
       audio.addEventListener('play', updateMediaSession);
       audio.addEventListener('loadedmetadata', updateMediaSession);
     }
+
+    // --- NEW CODE FOR SHARING VIA URL ---
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    const trackTitleFromUrl = getQueryParam('track');
+
+    if (trackTitleFromUrl) {
+      const foundIndex = tracks.findIndex(track => track.title.toLowerCase() === trackTitleFromUrl.toLowerCase());
+      if (foundIndex !== -1) {
+        currentTrackIndex = foundIndex;
+        loadTrack(currentTrackIndex);
+        audio.play(); // Autoplay the specific song
+        isPlaying = true; // Update play state
+        playPauseButton.textContent = 'Pause'; // Update button text
+      } else {
+        // If track not found, load a random one as a fallback
+        loadTrack(currentTrackIndex);
+      }
+    } else {
+      // If no track parameter, load a random one initially
+      loadTrack(currentTrackIndex);
+    }
+    // --- END NEW CODE ---
   </script>
   <footer>
     <p>SRG774 ©</p>
