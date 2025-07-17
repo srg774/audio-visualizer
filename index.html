@@ -217,24 +217,45 @@
 nextButton.addEventListener('click', () => {
   currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
   loadTrack(currentTrackIndex);
-  audio.play().then(() => {
-    isPlaying = true;
-    playPauseButton.textContent = 'Pause';
-  }).catch(e => {
-    console.log('Autoplay for next track failed:', e.message);
-  });
+
+  if (audioContext.state === 'suspended') {
+    audioContext.resume().then(() => {
+      connectAudioSource();
+      audio.play().then(() => {
+        isPlaying = true;
+        playPauseButton.textContent = 'Pause';
+      });
+    });
+  } else {
+    connectAudioSource();
+    audio.play().then(() => {
+      isPlaying = true;
+      playPauseButton.textContent = 'Pause';
+    });
+  }
 });
 
 prevButton.addEventListener('click', () => {
   currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
   loadTrack(currentTrackIndex);
-  audio.play().then(() => {
-    isPlaying = true;
-    playPauseButton.textContent = 'Pause';
-  }).catch(e => {
-    console.log('Autoplay for previous track failed:', e.message);
-  });
+
+  if (audioContext.state === 'suspended') {
+    audioContext.resume().then(() => {
+      connectAudioSource();
+      audio.play().then(() => {
+        isPlaying = true;
+        playPauseButton.textContent = 'Pause';
+      });
+    });
+  } else {
+    connectAudioSource();
+    audio.play().then(() => {
+      isPlaying = true;
+      playPauseButton.textContent = 'Pause';
+    });
+  }
 });
+
 
 
   seekBar.addEventListener('click', (e) => {
