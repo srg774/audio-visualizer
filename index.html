@@ -2,39 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SRG774 Music</title>
-  <meta property="og:title" content="srg774's Music" />
-  <meta property="og:description" content="Showcasing my original tracks" />
-  <meta property="og:image" content="assets/android-chrome-512x512.png" />
-  <meta property="og:url" content="https://srg774.github.io/audio-visualizer/" />
-  <meta property="og:type" content="website" />
-  <link rel="icon" href="assets/android-chrome-512x512.png" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" />
 
+  <!-- Meta & Favicon -->
+  <meta property="og:title" content="srg774's Music"/>
+  <meta property="og:description" content="Showcasing my original tracks"/>
+  <meta property="og:image" content="assets/android-chrome-512x512.png"/>
+  <meta property="og:url" content="https://srg774.github.io/audio-visualizer/"/>
+  <meta property="og:type" content="website"/>
+  <link rel="icon" href="assets/android-chrome-512x512.png" />
+  <link rel="apple-touch-icon" href="assets/android-chrome-512x512.png" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Fonts & Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
-      margin: 0;
-      padding: 0;
       background: #000;
       color: white;
+      margin: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       height: 100vh;
+      overflow: hidden;
       text-align: center;
     }
 
     h1 {
-      font-size: 0;
+      font-size: 0rem;
+      margin-top: 20px;
     }
 
     h2 {
       font-size: 1.5rem;
-      margin-top: 20px;
+      margin-bottom: 20px;
     }
 
     .controls {
@@ -46,31 +51,31 @@
     .controls button {
       padding: 10px 20px;
       background: #444;
-      color: white;
       border: none;
+      color: white;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 1rem;
       transition: background 0.3s;
     }
 
     .controls button:hover {
-      background: #555;
+      background: #666;
     }
 
     .seek-bar-container {
-      position: relative;
       width: 80%;
-      height: 10px;
-      margin-bottom: 20px;
+      height: 12px;
+      margin: 20px auto;
+      position: relative;
     }
 
     .seek-bar {
       width: 100%;
-      height: 10px;
+      height: 100%;
       background: #333;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
+      overflow: hidden;
       position: relative;
     }
 
@@ -78,37 +83,50 @@
       height: 100%;
       background: linear-gradient(90deg, #00f, #00bfff);
       width: 0%;
-      border-radius: 5px;
-      transition: width 0.1s;
     }
 
     .seek-bar-thumb {
       position: absolute;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 15px;
-      height: 15px;
+      width: 14px;
+      height: 14px;
       background: white;
       border-radius: 50%;
-      box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
-      left: 0%;
       pointer-events: none;
     }
 
     canvas {
-      display: block;
       width: 100%;
-      height: 70vh;
+      height: 60vh;
+      background: transparent;
     }
 
     footer {
       margin-top: auto;
       padding: 10px;
-      color: #aaa;
+    }
+
+    /* Rainbow NEW tag */
+    .rainbow-new {
+      font-style: italic;
+      font-weight: bold;
+      margin-left: 10px;
+      background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbow 3s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes rainbow {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
     }
   </style>
 </head>
 <body>
+
   <h1>SRG774 &copy;</h1>
   <h2 id="current-track">Now Playing:</h2>
 
@@ -128,120 +146,125 @@
   <audio id="audio"></audio>
   <canvas id="visualizer"></canvas>
 
-  <footer>SRG774 ©</footer>
+  <footer><p>SRG774 &copy;</p></footer>
 
-  <script>
-    const tracks = [
-      { title: "Layer 2", src: "assets/Layer 2.wav" },
-      { title: "Bouncy", src: "assets/bouncy's.wav" },
-      { title: "Waves", src: "assets/waves.wav" },
-      { title: "Pulse", src: "assets/Pulse_.wav" },
-      { title: "98", src: "assets/'981.wav" },
-      { title: "Synthétique", src: "assets/nuhouse21.mp3" },
-      { title: "Tin Hat", src: "assets/Tin Hat1.wav" },
-      { title: "Highest", src: "assets/Throne1.mp3" },
-      { title: "Rise", src: "assets/Rise.wav" },
-      { title: "Revos", src: "assets/revos (1) (1).wav" }
-    ];
+<script>
+  const tracks = [
+    { title: "Layer 2", src: "assets/Layer 2.wav" },
+    { title: "Bouncy", src: "assets/bouncy's.wav" },
+    { title: "Waves", src: "assets/waves.wav" },
+    { title: "Pulse", src: "assets/Pulse_.wav" },
+    { title: "98", src: "assets/'981.wav" },
+    { title: "Synthétique", src: "assets/nuhouse21.mp3" },
+    { title: "Tin Hat", src: "assets/Tin Hat1.wav" },
+    { title: "Highest", src: "assets/Throne1.mp3", isNew: true },
+    { title: "Rise", src: "assets/Rise.wav" },
+    { title: "Revos", src: "assets/revos (1) (1).wav" }
+  ];
 
-    let currentTrackIndex = Math.floor(Math.random() * tracks.length);
-    let isPlaying = false;
+  let currentTrackIndex = Math.floor(Math.random() * tracks.length);
+  let isPlaying = false;
 
-    const audio = document.getElementById('audio');
-    const currentTrack = document.getElementById('current-track');
-    const playPauseButton = document.getElementById('play-pause-button');
-    const prevButton = document.getElementById('prev-button');
-    const nextButton = document.getElementById('next-button');
-    const seekBar = document.getElementById('seek-bar');
-    const seekBarProgress = document.getElementById('seek-bar-progress');
-    const seekBarThumb = document.getElementById('seek-bar-thumb');
-    const canvas = document.getElementById('visualizer');
-    const ctx = canvas.getContext('2d');
+  const audio = document.getElementById('audio');
+  const currentTrack = document.getElementById('current-track');
+  const playPauseButton = document.getElementById('play-pause-button');
+  const prevButton = document.getElementById('prev-button');
+  const nextButton = document.getElementById('next-button');
+  const seekBar = document.getElementById('seek-bar');
+  const seekBarProgress = document.getElementById('seek-bar-progress');
+  const seekBarThumb = document.getElementById('seek-bar-thumb');
+  const canvas = document.getElementById('visualizer');
+  const ctx = canvas.getContext('2d');
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audio);
-    let audioSourceConnected = false;
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const analyser = audioContext.createAnalyser();
+  const source = audioContext.createMediaElementSource(audio);
+  let audioSourceConnected = false;
 
-    analyser.fftSize = 256;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    function resizeCanvas() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+  function connectAudioSource() {
+    if (!audioSourceConnected) {
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+      audioSourceConnected = true;
     }
+  }
 
-    function connectAudioSource() {
-      if (!audioSourceConnected) {
-        source.connect(analyser);
-        analyser.connect(audioContext.destination);
-        audioSourceConnected = true;
-      }
-    }
+  analyser.fftSize = 256;
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
 
-    function loadTrack(index) {
-      const track = tracks[index];
-      audio.src = track.src;
-      currentTrack.textContent = `Now Playing: ${track.title}`;
+  function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+
+  function loadTrack(index) {
+    const track = tracks[index];
+    audio.src = track.src;
+    isPlaying = false;
+    playPauseButton.textContent = 'Play';
+
+    const newTag = track.isNew ? `<span class="rainbow-new">NEW</span>` : '';
+    currentTrack.innerHTML = `Now Playing: ${track.title} ${newTag}`;
+    updateMediaSession();
+  }
+
+  function togglePlayback() {
+    if (audio.paused) {
+      audio.play();
+      isPlaying = true;
+      playPauseButton.textContent = 'Pause';
+    } else {
+      audio.pause();
       isPlaying = false;
       playPauseButton.textContent = 'Play';
-      updateMediaSession();
     }
+  }
 
-    function togglePlayback() {
-      if (audio.paused) {
-        audio.play();
-        isPlaying = true;
-        playPauseButton.textContent = 'Pause';
-      } else {
-        audio.pause();
-        isPlaying = false;
-        playPauseButton.textContent = 'Play';
-      }
-    }
-
-    playPauseButton.addEventListener('click', () => {
-      if (audioContext.state === 'suspended') {
-        audioContext.resume().then(() => {
-          connectAudioSource();
-          togglePlayback();
-        });
-      } else {
+  playPauseButton.addEventListener('click', () => {
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().then(() => {
         connectAudioSource();
         togglePlayback();
-      }
-    });
+      });
+    } else {
+      connectAudioSource();
+      togglePlayback();
+    }
+  });
 
-    nextButton.addEventListener('click', () => {
-      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-      loadTrack(currentTrackIndex);
-      audio.play();
-      isPlaying = true;
-      playPauseButton.textContent = 'Pause';
-    });
+  prevButton.addEventListener('click', () => {
+    currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+    loadTrack(currentTrackIndex);
+    audio.play();
+    isPlaying = true;
+    playPauseButton.textContent = 'Pause';
+  });
 
-    prevButton.addEventListener('click', () => {
-      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-      loadTrack(currentTrackIndex);
-      audio.play();
-      isPlaying = true;
-      playPauseButton.textContent = 'Pause';
-    });
+  nextButton.addEventListener('click', () => {
+    currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+    loadTrack(currentTrackIndex);
+    audio.play();
+    isPlaying = true;
+    playPauseButton.textContent = 'Pause';
+  });
 
-    seekBar.addEventListener('click', (e) => {
-      const rect = seekBar.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
-      audio.currentTime = percent * audio.duration;
-    });
+  audio.addEventListener('timeupdate', () => {
+    const progress = (audio.currentTime / audio.duration) * 100;
+    seekBarProgress.style.width = `${progress}%`;
+    const thumbPos = (progress / 100) * seekBar.offsetWidth;
+    seekBarThumb.style.left = `${thumbPos}px`;
+  });
 
-    audio.addEventListener('timeupdate', () => {
-      const percent = (audio.currentTime / audio.duration) * 100;
-      seekBarProgress.style.width = `${percent}%`;
-      seekBarThumb.style.left = `${percent}%`;
-    });
+  seekBar.addEventListener('click', (e) => {
+    const rect = seekBar.getBoundingClientRect();
+    const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    audio.currentTime = seekTime;
+    if (isPlaying) audio.play();
+  });
 
-    function drawVisualizer() {
+  function drawVisualizer() {
+    if (audioContext.state === 'running') {
       requestAnimationFrame(drawVisualizer);
       analyser.getByteFrequencyData(dataArray);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -266,55 +289,59 @@
         ctx.stroke();
       }
     }
+  }
 
-    audio.addEventListener('play', () => {
-      connectAudioSource();
-      drawVisualizer();
-    });
+  audio.addEventListener('play', () => {
+    drawVisualizer();
+  });
 
-    audio.addEventListener('ended', () => {
-      let newIndex;
-      do {
-        newIndex = Math.floor(Math.random() * tracks.length);
-      } while (newIndex === currentTrackIndex);
-      currentTrackIndex = newIndex;
-      loadTrack(currentTrackIndex);
-      audio.play();
-    });
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // Media Session API
-    function updateMediaSession() {
-      if ('mediaSession' in navigator) {
-        const track = tracks[currentTrackIndex];
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: track.title,
-          artist: 'SRG774',
-          album: 'My Playlist',
-          artwork: [{ src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }]
-        });
-
-        navigator.mediaSession.setActionHandler('play', () => {
-          connectAudioSource();
-          audio.play();
-          isPlaying = true;
-          playPauseButton.textContent = 'Pause';
-        });
-
-        navigator.mediaSession.setActionHandler('pause', () => {
-          audio.pause();
-          isPlaying = false;
-          playPauseButton.textContent = 'Play';
-        });
-
-        navigator.mediaSession.setActionHandler('previoustrack', () => prevButton.click());
-        navigator.mediaSession.setActionHandler('nexttrack', () => nextButton.click());
-      }
-    }
-
+  audio.addEventListener('ended', () => {
+    currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
     loadTrack(currentTrackIndex);
-  </script>
+    audio.play();
+  });
+
+  // Media Session API
+  function updateMediaSession() {
+    if ('mediaSession' in navigator) {
+      const track = tracks[currentTrackIndex];
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.title,
+        artist: 'SRG774',
+        album: 'My Playlist',
+        artwork: [
+          { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        connectAudioSource();
+        audio.play();
+        isPlaying = true;
+        playPauseButton.textContent = 'Pause';
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audio.pause();
+        isPlaying = false;
+        playPauseButton.textContent = 'Play';
+      });
+
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        prevButton.click();
+      });
+
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        nextButton.click();
+      });
+    }
+  }
+
+  // Initial setup
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+  loadTrack(currentTrackIndex);
+</script>
+
 </body>
 </html>
