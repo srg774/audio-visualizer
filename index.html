@@ -214,23 +214,28 @@
     }
   }
 
-  nextButton.addEventListener('click', () => {
-    currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-    loadTrack(currentTrackIndex);
-    if (isPlaying) audio.play();
+nextButton.addEventListener('click', () => {
+  currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+  loadTrack(currentTrackIndex);
+  audio.play().then(() => {
+    isPlaying = true;
+    playPauseButton.textContent = 'Pause';
+  }).catch(e => {
+    console.log('Autoplay for next track failed:', e.message);
   });
+});
 
-  prevButton.addEventListener('click', () => {
-    currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-    loadTrack(currentTrackIndex);
-    if (isPlaying) audio.play();
+prevButton.addEventListener('click', () => {
+  currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+  loadTrack(currentTrackIndex);
+  audio.play().then(() => {
+    isPlaying = true;
+    playPauseButton.textContent = 'Pause';
+  }).catch(e => {
+    console.log('Autoplay for previous track failed:', e.message);
   });
+});
 
-  audio.addEventListener('timeupdate', () => {
-    const progress = (audio.currentTime / audio.duration) * 100;
-    seekBarProgress.style.width = `${progress}%`;
-    seekBarThumb.style.left = `${progress}%`;
-  });
 
   seekBar.addEventListener('click', (e) => {
     const rect = seekBar.getBoundingClientRect();
