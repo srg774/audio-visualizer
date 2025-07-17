@@ -1,51 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SRG774 Music</title>
-  <meta property="og:title" content="srg774's Music">
-  <meta property="og:description" content="Showcasing my original tracks">
-  <meta property="og:image" content="assets/android-chrome-512x512.png">
-  <meta property="og:url" content="https://srg774.github.io/audio-visualizer/">
-  <meta property="og:type" content="website">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/android-chrome-512x512.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="assets/android-chrome-512x512.png">
-  <link rel="manifest" href="manifest.json">
-  <style>
-    /* Your existing CSS styles */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
+  <meta property="og:title" content="srg774's Music" />
+  <meta property="og:description" content="Showcasing my original tracks" />
+  <meta property="og:image" content="assets/android-chrome-512x512.png" />
+  <meta property="og:url" content="https://srg774.github.io/audio-visualizer/" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="assets/android-chrome-512x512.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" />
 
+  <style>
     body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       height: 100vh;
-      margin: 0;
-      background: #000;
-      color: white;
-      font-family: 'Poppins', sans-serif;
       text-align: center;
     }
 
     h1 {
-      font-size: 0rem; /* This makes it invisible, was this intentional? */
-      font-weight: 700;
-      margin-top: 20px;
+      font-size: 0;
     }
 
     h2 {
       font-size: 1.5rem;
-      font-weight: 500;
-      margin: 10px 0;
-      display: inline-block;
-      margin-bottom: 20px;
+      margin-top: 20px;
     }
 
     .controls {
       display: flex;
-      align-items: center;
       gap: 15px;
       margin: 20px 0;
     }
@@ -69,45 +62,49 @@
       position: relative;
       width: 80%;
       height: 10px;
-      margin: 15px 0;
+      margin-bottom: 20px;
     }
 
     .seek-bar {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 10px;
-      background: #444;
+      background: #333;
       border-radius: 5px;
-      overflow: hidden;
       cursor: pointer;
+      position: relative;
     }
 
     .seek-bar-progress {
       height: 100%;
       background: linear-gradient(90deg, #00f, #00bfff);
       width: 0%;
+      border-radius: 5px;
       transition: width 0.1s;
     }
 
     .seek-bar-thumb {
       position: absolute;
       top: 50%;
-      left: 0;
+      transform: translate(-50%, -50%);
       width: 15px;
       height: 15px;
-      background: #fff;
+      background: white;
       border-radius: 50%;
-      transform: translate(-50%, -50%);
       box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+      left: 0%;
+      pointer-events: none;
     }
 
     canvas {
       display: block;
-      background: transparent;
       width: 100%;
       height: 70vh;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 10px;
+      color: #aaa;
     }
   </style>
 </head>
@@ -131,143 +128,120 @@
   <audio id="audio"></audio>
   <canvas id="visualizer"></canvas>
 
-<script>
-  const tracks = [
-    { title: "Layer 2", src: "assets/Layer 2.wav" },
-    { title: "Bouncy", src: "assets/bouncy's.wav" },
-    { title: "Waves", src: "assets/waves.wav" },
-    { title: "Pulse", src: "assets/Pulse_.wav" },
-    { title: "98", src: "assets/'981.wav" },
-    { title: "Synthétique", src: "assets/nuhouse21.mp3" },
-    { title: "Tin Hat", src: "assets/Tin Hat1.wav" },
-    { title: "Highest", src: "assets/Throne1.mp3" },
-    { title: "Rise", src: "assets/Rise.wav" },
-    { title: "Revos", src: "assets/revos (1) (1).wav" }
-  ];
+  <footer>SRG774 ©</footer>
 
-  let currentTrackIndex = Math.floor(Math.random() * tracks.length);
-  let isPlaying = false;
+  <script>
+    const tracks = [
+      { title: "Layer 2", src: "assets/Layer 2.wav" },
+      { title: "Bouncy", src: "assets/bouncy's.wav" },
+      { title: "Waves", src: "assets/waves.wav" },
+      { title: "Pulse", src: "assets/Pulse_.wav" },
+      { title: "98", src: "assets/'981.wav" },
+      { title: "Synthétique", src: "assets/nuhouse21.mp3" },
+      { title: "Tin Hat", src: "assets/Tin Hat1.wav" },
+      { title: "Highest", src: "assets/Throne1.mp3" },
+      { title: "Rise", src: "assets/Rise.wav" },
+      { title: "Revos", src: "assets/revos (1) (1).wav" }
+    ];
 
-  const audio = document.getElementById('audio');
-  const currentTrack = document.getElementById('current-track');
-  const playPauseButton = document.getElementById('play-pause-button');
-  const prevButton = document.getElementById('prev-button');
-  const nextButton = document.getElementById('next-button');
-  const seekBar = document.getElementById('seek-bar');
-  const seekBarProgress = document.getElementById('seek-bar-progress');
-  const seekBarThumb = document.getElementById('seek-bar-thumb');
-  const canvas = document.getElementById('visualizer');
-  const ctx = canvas.getContext('2d');
+    let currentTrackIndex = Math.floor(Math.random() * tracks.length);
+    let isPlaying = false;
 
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const analyser = audioContext.createAnalyser();
-  const source = audioContext.createMediaElementSource(audio);
-  let audioSourceConnected = false;
+    const audio = document.getElementById('audio');
+    const currentTrack = document.getElementById('current-track');
+    const playPauseButton = document.getElementById('play-pause-button');
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
+    const seekBar = document.getElementById('seek-bar');
+    const seekBarProgress = document.getElementById('seek-bar-progress');
+    const seekBarThumb = document.getElementById('seek-bar-thumb');
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
 
-  function connectAudioSource() {
-    if (!audioSourceConnected) {
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-      audioSourceConnected = true;
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaElementSource(audio);
+    let audioSourceConnected = false;
+
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
     }
-  }
 
-  analyser.fftSize = 256;
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Uint8Array(bufferLength);
+    function connectAudioSource() {
+      if (!audioSourceConnected) {
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        audioSourceConnected = true;
+      }
+    }
 
-  function resizeCanvas() {
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-  }
+    function loadTrack(index) {
+      const track = tracks[index];
+      audio.src = track.src;
+      currentTrack.textContent = `Now Playing: ${track.title}`;
+      isPlaying = false;
+      playPauseButton.textContent = 'Play';
+      updateMediaSession();
+    }
 
-  function loadTrack(index) {
-    const track = tracks[index];
-    audio.src = track.src;
-    currentTrack.textContent = `Now Playing: ${track.title}`;
-    playPauseButton.textContent = 'Play';
-    isPlaying = false;
-    updateMediaSession();
-  }
+    function togglePlayback() {
+      if (audio.paused) {
+        audio.play();
+        isPlaying = true;
+        playPauseButton.textContent = 'Pause';
+      } else {
+        audio.pause();
+        isPlaying = false;
+        playPauseButton.textContent = 'Play';
+      }
+    }
 
-  playPauseButton.addEventListener('click', () => {
-    if (audioContext.state === 'suspended') {
-      audioContext.resume().then(() => {
+    playPauseButton.addEventListener('click', () => {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+          connectAudioSource();
+          togglePlayback();
+        });
+      } else {
         connectAudioSource();
         togglePlayback();
-      });
-    } else {
-      connectAudioSource();
-      togglePlayback();
-    }
-  });
+      }
+    });
 
-  function togglePlayback() {
-    if (audio.paused) {
+    nextButton.addEventListener('click', () => {
+      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+      loadTrack(currentTrackIndex);
       audio.play();
       isPlaying = true;
       playPauseButton.textContent = 'Pause';
-    } else {
-      audio.pause();
-      isPlaying = false;
-      playPauseButton.textContent = 'Play';
-    }
-  }
-
-nextButton.addEventListener('click', () => {
-  currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-  loadTrack(currentTrackIndex);
-
-  if (audioContext.state === 'suspended') {
-    audioContext.resume().then(() => {
-      connectAudioSource();
-      audio.play().then(() => {
-        isPlaying = true;
-        playPauseButton.textContent = 'Pause';
-      });
     });
-  } else {
-    connectAudioSource();
-    audio.play().then(() => {
+
+    prevButton.addEventListener('click', () => {
+      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+      loadTrack(currentTrackIndex);
+      audio.play();
       isPlaying = true;
       playPauseButton.textContent = 'Pause';
     });
-  }
-});
 
-prevButton.addEventListener('click', () => {
-  currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-  loadTrack(currentTrackIndex);
-
-  if (audioContext.state === 'suspended') {
-    audioContext.resume().then(() => {
-      connectAudioSource();
-      audio.play().then(() => {
-        isPlaying = true;
-        playPauseButton.textContent = 'Pause';
-      });
+    seekBar.addEventListener('click', (e) => {
+      const rect = seekBar.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      audio.currentTime = percent * audio.duration;
     });
-  } else {
-    connectAudioSource();
-    audio.play().then(() => {
-      isPlaying = true;
-      playPauseButton.textContent = 'Pause';
+
+    audio.addEventListener('timeupdate', () => {
+      const percent = (audio.currentTime / audio.duration) * 100;
+      seekBarProgress.style.width = `${percent}%`;
+      seekBarThumb.style.left = `${percent}%`;
     });
-  }
-});
 
-
-
-  seekBar.addEventListener('click', (e) => {
-    const rect = seekBar.getBoundingClientRect();
-    const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-    audio.currentTime = seekTime;
-    // Ensure it continues playing if it was already playing
-    if (isPlaying) audio.play();
-  });
-
-  function drawVisualizer() {
-    if (audioContext.state === 'running' && audioSourceConnected) {
+    function drawVisualizer() {
       requestAnimationFrame(drawVisualizer);
       analyser.getByteFrequencyData(dataArray);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -279,7 +253,6 @@ prevButton.addEventListener('click', () => {
       for (let i = 0; i < bufferLength; i++) {
         const angle = (i / bufferLength) * 2 * Math.PI;
         const barHeight = (dataArray[i] / 255) * radius;
-
         const x1 = centerX + Math.cos(angle) * radius;
         const y1 = centerY + Math.sin(angle) * radius;
         const x2 = centerX + Math.cos(angle) * (radius + barHeight);
@@ -293,69 +266,55 @@ prevButton.addEventListener('click', () => {
         ctx.stroke();
       }
     }
-  }
 
-  audio.addEventListener('play', () => {
-    if (audioContext.state === 'running') drawVisualizer();
-  });
+    audio.addEventListener('play', () => {
+      connectAudioSource();
+      drawVisualizer();
+    });
 
-  audio.addEventListener('ended', () => {
-    let newIndex;
-    do {
-      newIndex = Math.floor(Math.random() * tracks.length);
-    } while (newIndex === currentTrackIndex);
-    currentTrackIndex = newIndex;
-    loadTrack(currentTrackIndex);
-    audio.play();
-  });
+    audio.addEventListener('ended', () => {
+      let newIndex;
+      do {
+        newIndex = Math.floor(Math.random() * tracks.length);
+      } while (newIndex === currentTrackIndex);
+      currentTrackIndex = newIndex;
+      loadTrack(currentTrackIndex);
+      audio.play();
+    });
 
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
-  // Media Session API
-  if ('mediaSession' in navigator) {
+    // Media Session API
     function updateMediaSession() {
-      const track = tracks[currentTrackIndex];
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: track.title,
-        artist: 'SRG774',
-        album: 'My Playlist',
-        artwork: [
-          { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
-        ]
-      });
+      if ('mediaSession' in navigator) {
+        const track = tracks[currentTrackIndex];
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: track.title,
+          artist: 'SRG774',
+          album: 'My Playlist',
+          artwork: [{ src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }]
+        });
+
+        navigator.mediaSession.setActionHandler('play', () => {
+          connectAudioSource();
+          audio.play();
+          isPlaying = true;
+          playPauseButton.textContent = 'Pause';
+        });
+
+        navigator.mediaSession.setActionHandler('pause', () => {
+          audio.pause();
+          isPlaying = false;
+          playPauseButton.textContent = 'Play';
+        });
+
+        navigator.mediaSession.setActionHandler('previoustrack', () => prevButton.click());
+        navigator.mediaSession.setActionHandler('nexttrack', () => nextButton.click());
+      }
     }
 
-    navigator.mediaSession.setActionHandler('play', () => {
-      connectAudioSource();
-      audio.play();
-      isPlaying = true;
-      playPauseButton.textContent = 'Pause';
-    });
-
-    navigator.mediaSession.setActionHandler('pause', () => {
-      audio.pause();
-      isPlaying = false;
-      playPauseButton.textContent = 'Play';
-    });
-
-    navigator.mediaSession.setActionHandler('previoustrack', () => {
-      prevButton.click();
-    });
-
-    navigator.mediaSession.setActionHandler('nexttrack', () => {
-      nextButton.click();
-    });
-
-    audio.addEventListener('play', updateMediaSession);
-    audio.addEventListener('loadedmetadata', updateMediaSession);
-  }
-
-  // Initial load
-  loadTrack(currentTrackIndex);
-</script>
-  <footer>
-    <p>SRG774 ©</p>
-  </footer>
+    loadTrack(currentTrackIndex);
+  </script>
 </body>
 </html>
