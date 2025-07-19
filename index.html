@@ -165,7 +165,7 @@
 
     let currentTrackIndex = Math.floor(Math.random() * tracks.length);
     let isPlaying = false;
-    let hasUserInitiatedPlayback = false; // <<< NEW FLAG
+    let hasUserInitiatedPlayback = false; // Flag to track if user has initiated playback at least once
 
     const audio = document.getElementById('audio');
     const currentTrack = document.getElementById('current-track');
@@ -180,28 +180,30 @@
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
+    const compressor = audioContext.createDynamicsCompressor(); // Dynamics Compressor for "auto-max" effect
+
     let source; // Declare source here but connect later
+    let audioSourceConnected = false; // Flag to track if the audio source has been connected
 
-    // Flag to track if the audio source has been connected to the audio context graph
-    let audioSourceConnected = false;
-
-    // Function to ensure the AudioContext and source are connected
+    // Function to ensure the AudioContext is running and source is connected
     function ensureAudioContextAndSource() {
         if (audioContext.state === 'suspended') {
             audioContext.resume().then(() => {
                 console.log('AudioContext resumed!');
                 if (!audioSourceConnected) {
                     source = audioContext.createMediaElementSource(audio);
-                    source.connect(analyser);
-                    analyser.connect(audioContext.destination);
+                    source.connect(compressor); // Source connects to compressor
+                    compressor.connect(analyser); // Compressor connects to analyser
+                    analyser.connect(audioContext.destination); // Analyser connects to speakers
                     audioSourceConnected = true;
                 }
             });
         } else {
             if (!audioSourceConnected) {
                 source = audioContext.createMediaElementSource(audio);
-                source.connect(analyser);
-                analyser.connect(audioContext.destination);
+                source.connect(compressor); // Source connects to compressor
+                compressor.connect(analyser); // Compressor connects to analyser
+                analyser.connect(audioContext.destination); // Analyser connects to speakers
                 audioSourceConnected = true;
             }
         }
@@ -216,8 +218,12 @@
         canvas.height = canvas.offsetHeight;
     }
 
-    // Modified loadTrack function
-    function loadTrack(index, shouldAutoPlay = false) { // shouldAutoPlay now reflects if we *want* it to play
+    /**
+     * Loads a track and optionally attempts to auto-play it.
+     * @param {number} index - The index of the track to load.
+     * @param {boolean} shouldAutoPlay - Whether the track should attempt to auto-play.
+     */
+    function loadTrack(index, shouldAutoPlay = false) {
         const track = tracks[index];
         audio.src = track.src;
 
@@ -225,22 +231,20 @@
         currentTrack.innerHTML = `Now Playing: ${track.title} ${newTag}`;
         updateMediaSession();
 
-        // Always set to Play/Pause based on current isPlaying state initially
-        // This is important for when switching tracks without immediate auto-play
-        if (shouldAutoPlay && hasUserInitiatedPlayback) { // <<< Logic for auto-play
-            // This path is taken for Next/Prev/Ended AFTER initial user click
+        if (shouldAutoPlay && hasUserInitiatedPlayback) {
+            // Attempt to play only if auto-play is requested AND user has already interacted
             ensureAudioContextAndSource();
             audio.play().then(() => {
                 isPlaying = true;
                 playPauseButton.textContent = 'Pause';
-                drawVisualizer(); // Start visualizer
+                drawVisualizer(); // Start visualizer when playing
             }).catch(error => {
-                console.warn("Autoplay prevented after user interaction:", error);
-                isPlaying = false;
+                console.warn("Autoplay prevented:", error);
+                isPlaying = false; // Reset to play state if autoplay failed
                 playPauseButton.textContent = 'Play';
             });
         } else {
-            // This path is taken for initial load OR Next/Prev *before* user has pressed Play
+            // This path is taken for initial page load OR Next/Prev clicks BEFORE user has pressed Play
             isPlaying = false; // Ensure it's not marked as playing
             audio.pause(); // Ensure audio is paused if it somehow started
             playPauseButton.textContent = 'Play'; // Button should always say "Play"
@@ -252,15 +256,15 @@
 
     function togglePlayback() {
         if (audio.paused) {
-            ensureAudioContextAndSource();
+            ensureAudioContextAndSource(); // Ensure context is running and source connected
             audio.play().then(() => {
                 isPlaying = true;
                 playPauseButton.textContent = 'Pause';
                 drawVisualizer();
-                hasUserInitiatedPlayback = true; // <<< Set flag on first successful play
+                hasUserInitiatedPlayback = true; // Set this flag on the very first successful play
             }).catch(error => {
-                console.warn("Playback prevented (likely no user gesture):", error);
-                // If play fails, reset state
+                console.warn("Playback prevented (likely no user gesture yet):", error);
+                // If play fails (e.g., no user gesture), reset state
                 isPlaying = false;
                 playPauseButton.textContent = 'Play';
                 hasUserInitiatedPlayback = false; // Keep flag false if play fails
@@ -280,17 +284,17 @@
     prevButton.addEventListener('click', () => {
         currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
         // Auto-play only if user has already initiated playback at least once
-        loadTrack(currentTrackIndex, hasUserInitiatedPlayback); // <<< Use the flag
+        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
     });
 
     nextButton.addEventListener('click', () => {
         currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
         // Auto-play only if user has already initiated playback at least once
-        loadTrack(currentTrackIndex, hasUserInitiatedPlayback); // <<< Use the flag
+        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
     });
 
     audio.addEventListener('timeupdate', () => {
-        if (!isNaN(audio.duration)) { // Ensure duration is available
+        if (!isNaN(audio.duration)) { // Ensure duration is available to prevent NaN issues
             const progress = (audio.currentTime / audio.duration) * 100;
             seekBarProgress.style.width = `${progress}%`;
             const thumbPos = (progress / 100) * seekBar.offsetWidth;
@@ -302,9 +306,8 @@
         const rect = seekBar.getBoundingClientRect();
         const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
         audio.currentTime = seekTime;
-        // If it was playing, resume playing after seeking.
-        // If it wasn't playing, it stays paused (unless it's the very first play)
-        if (isPlaying || hasUserInitiatedPlayback) { // If it was playing or has played before
+        // If it was playing, or if the user has previously interacted, attempt to resume playing after seeking.
+        if (isPlaying || hasUserInitiatedPlayback) {
             ensureAudioContextAndSource();
             audio.play().catch(error => console.warn("Seek-and-play prevented:", error));
         }
@@ -358,11 +361,10 @@
         // Visualizer will stop drawing automatically due to `audio.paused` check in drawVisualizer()
     });
 
-
     audio.addEventListener('ended', () => {
         currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
         // Auto-play the next track only if user has already initiated playback
-        loadTrack(currentTrackIndex, hasUserInitiatedPlayback); // <<< Use the flag
+        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
     });
 
     function updateMediaSession() {
@@ -377,23 +379,15 @@
                 ]
             });
 
-            // Set action handlers based on the current playback state expectation
-            if (hasUserInitiatedPlayback) {
-                 navigator.mediaSession.setActionHandler('play', () => {
-                    togglePlayback();
-                 });
-                 navigator.mediaSession.setActionHandler('pause', () => {
-                    togglePlayback();
-                 });
-            } else {
-                 // On initial load, only allow play action via media session
-                 navigator.mediaSession.setActionHandler('play', () => {
-                    togglePlayback();
-                 });
-                 // No pause handler if it's not playing yet
-                 navigator.mediaSession.setActionHandler('pause', null);
-            }
+            // Set action handlers based on whether playback has been initiated by the user
+            navigator.mediaSession.setActionHandler('play', () => {
+                togglePlayback();
+            });
 
+            // Only provide a pause handler if we expect to be able to pause
+            navigator.mediaSession.setActionHandler('pause', hasUserInitiatedPlayback ? () => {
+                togglePlayback();
+            } : null);
 
             navigator.mediaSession.setActionHandler('previoustrack', () => {
                 prevButton.click();
@@ -408,10 +402,9 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Initial load: load the first track, but DO NOT auto-play.
-    // The player will be in a "Play" ready state, allowing track Browse.
+    // Initial load: Load the first track, but DO NOT auto-play.
+    // The player will be in a "Play" ready state, allowing silent track Browse.
     loadTrack(currentTrackIndex, false);
-
 </script>
 
 </body>
