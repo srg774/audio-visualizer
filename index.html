@@ -1,359 +1,395 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SRG774 Music</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SRG774 Music</title>
 
-  <!-- Meta & Favicon -->
-  <meta property="og:title" content="srg774's Music"/>
-  <meta property="og:description" content="Showcasing my original tracks"/>
-  <meta property="og:image" content="assets/android-chrome-512x512.png"/>
-  <meta property="og:url" content="https://srg774.github.io/audio-visualizer/"/>
-  <meta property="og:type" content="website"/>
-  <link rel="icon" href="assets/android-chrome-512x512.png" />
-  <link rel="apple-touch-icon" href="assets/android-chrome-512x512.png" />
-  <link rel="manifest" href="manifest.json" />
+    <meta property="og:title" content="srg774's Music"/>
+    <meta property="og:description" content="Showcasing my original tracks"/>
+    <meta property="og:image" content="assets/android-chrome-512x512.png"/>
+    <meta property="og:url" content="https://srg774.github.io/audio-visualizer/"/>
+    <meta property="og:type" content="website"/>
+    <link rel="icon" href="assets/android-chrome-512x512.png" />
+    <link rel="apple-touch-icon" href="assets/android-chrome-512x512.png" />
+    <link rel="manifest" href="manifest.json" />
 
-  <!-- Fonts & Styles -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
 
-  <!-- 🐐 GoatCounter -->
-  <script data-goatcounter="https://srg774.goatcounter.com/count"
-          async src="//gc.zgo.at/count.js"></script>
+    <script data-goatcounter="https://srg774.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
 
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #000;
-      color: white;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-      text-align: center;
-    }
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #000;
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
 
-    h1 {
-      font-size: 0rem;
-      margin-top: 20px;
-    }
+        h1 {
+            font-size: 0rem;
+            margin-top: 20px;
+        }
 
-    h2 {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-    }
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
 
-    .controls {
-      display: flex;
-      gap: 15px;
-      margin: 20px 0;
-    }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
 
-    .controls button {
-      padding: 10px 20px;
-      background: #444;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
+        .controls button {
+            padding: 10px 20px;
+            background: #444;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
-    .controls button:hover {
-      background: #666;
-    }
+        .controls button:hover {
+            background: #666;
+        }
 
-    .seek-bar-container {
-      width: 80%;
-      height: 12px;
-      margin: 20px auto;
-      position: relative;
-    }
+        .seek-bar-container {
+            width: 80%;
+            height: 12px;
+            margin: 20px auto;
+            position: relative;
+        }
 
-    .seek-bar {
-      width: 100%;
-      height: 100%;
-      background: #333;
-      border-radius: 6px;
-      cursor: pointer;
-      overflow: hidden;
-      position: relative;
-    }
+        .seek-bar {
+            width: 100%;
+            height: 100%;
+            background: #333;
+            border-radius: 6px;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
 
-    .seek-bar-progress {
-      height: 100%;
-      background: linear-gradient(90deg, #00f, #00bfff);
-      width: 0%;
-    }
+        .seek-bar-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #00f, #00bfff);
+            width: 0%;
+        }
 
-    .seek-bar-thumb {
-      position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 14px;
-      height: 14px;
-      background: white;
-      border-radius: 50%;
-      pointer-events: none;
-    }
+        .seek-bar-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+        }
 
-    canvas {
-      width: 100%;
-      height: 60vh;
-      background: transparent;
-    }
+        canvas {
+            width: 100%;
+            height: 60vh;
+            background: transparent;
+        }
 
-    footer {
-      margin-top: auto;
-      padding: 10px;
-    }
+        footer {
+            margin-top: auto;
+            padding: 10px;
+        }
 
-    .rainbow-new {
-      font-style: italic;
-      font-weight: bold;
-      margin-left: 10px;
-      background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: rainbow 3s linear infinite;
-      display: inline-block;
-    }
+        .rainbow-new {
+            font-style: italic;
+            font-weight: bold;
+            margin-left: 10px;
+            background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 3s linear infinite;
+            display: inline-block;
+        }
 
-    @keyframes rainbow {
-      0% { filter: hue-rotate(0deg); }
-      100% { filter: hue-rotate(360deg); }
-    }
-  </style>
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
 
-  <h1>SRG774 &copy;</h1>
-  <h2 id="current-track">Now Playing:</h2>
+    <h1>SRG774 &copy;</h1>
+    <h2 id="current-track">Now Playing:</h2>
 
-  <div class="controls">
-    <button id="prev-button">Previous</button>
-    <button id="play-pause-button">Play</button>
-    <button id="next-button">Next</button>
-  </div>
-
-  <div class="seek-bar-container">
-    <div class="seek-bar" id="seek-bar">
-      <div class="seek-bar-progress" id="seek-bar-progress"></div>
-      <div class="seek-bar-thumb" id="seek-bar-thumb"></div>
+    <div class="controls">
+        <button id="prev-button">Previous</button>
+        <button id="play-pause-button">Play</button>
+        <button id="next-button">Next</button>
     </div>
-  </div>
 
-  <audio id="audio"></audio>
-  <canvas id="visualizer"></canvas>
+    <div class="seek-bar-container">
+        <div class="seek-bar" id="seek-bar">
+            <div class="seek-bar-progress" id="seek-bar-progress"></div>
+            <div class="seek-bar-thumb" id="seek-bar-thumb"></div>
+        </div>
+    </div>
 
-  <footer><p>SRG774 &copy;</p></footer>
+    <audio id="audio"></audio>
+    <canvas id="visualizer"></canvas>
+
+    <footer><p>SRG774 &copy;</p></footer>
 
 <script>
-  const tracks = [
-    { title: "Layer 2", src: "assets/Layer 2.wav" },
-    { title: "Bouncy", src: "assets/bouncy's.wav" },
-    { title: "Waves", src: "assets/waves.wav" },
-    { title: "Pulse", src: "assets/Pulse_.wav" },
-    { title: "98", src: "assets/'981.wav" },
-    { title: "Synthétique", src: "assets/nuhouse21.mp3" },
-    { title: "Tin Hat", src: "assets/Tin Hat1.wav" },
-    { title: "Highest", src: "assets/Throne21.wav", isNew: true },
-    { title: "Rise", src: "assets/Rise.wav" },
-    { title: "Revos", src: "assets/revos (1) (1).wav" }
-  ];
+    const tracks = [
+        { title: "Layer 2", src: "assets/Layer 2.wav" },
+        { title: "Bouncy", src: "assets/bouncy's.wav" },
+        { title: "Waves", src: "assets/waves.wav" },
+        { title: "Pulse", src: "assets/Pulse_.wav" },
+        { title: "98", src: "assets/'981.wav" },
+        { title: "Synthétique", src: "assets/nuhouse21.mp3" },
+        { title: "Tin Hat", src: "assets/Tin Hat1.wav" },
+        { title: "Highest", src: "assets/Throne21.wav", isNew: true },
+        { title: "Rise", src: "assets/Rise.wav" },
+        { title: "Revos", src: "assets/revos (1) (1).wav" }
+    ];
 
-  let currentTrackIndex = Math.floor(Math.random() * tracks.length);
-  let isPlaying = false;
+    let currentTrackIndex = Math.floor(Math.random() * tracks.length);
+    let isPlaying = false; // We will manage this differently for initial load
 
-  const audio = document.getElementById('audio');
-  const currentTrack = document.getElementById('current-track');
-  const playPauseButton = document.getElementById('play-pause-button');
-  const prevButton = document.getElementById('prev-button');
-  const nextButton = document.getElementById('next-button');
-  const seekBar = document.getElementById('seek-bar');
-  const seekBarProgress = document.getElementById('seek-bar-progress');
-  const seekBarThumb = document.getElementById('seek-bar-thumb');
-  const canvas = document.getElementById('visualizer');
-  const ctx = canvas.getContext('2d');
+    const audio = document.getElementById('audio');
+    const currentTrack = document.getElementById('current-track');
+    const playPauseButton = document.getElementById('play-pause-button');
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
+    const seekBar = document.getElementById('seek-bar');
+    const seekBarProgress = document.getElementById('seek-bar-progress');
+    const seekBarThumb = document.getElementById('seek-bar-thumb');
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
 
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const analyser = audioContext.createAnalyser();
-  const source = audioContext.createMediaElementSource(audio);
-  let audioSourceConnected = false;
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    let source; // Declare source here but connect later
 
-  function connectAudioSource() {
-    if (!audioSourceConnected) {
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-      audioSourceConnected = true;
+    // Flag to track if the audio source has been connected to the audio context graph
+    let audioSourceConnected = false;
+
+    // Function to ensure the AudioContext and source are connected
+    function ensureAudioContextAndSource() {
+        if (audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                console.log('AudioContext resumed!');
+                if (!audioSourceConnected) {
+                    source = audioContext.createMediaElementSource(audio);
+                    source.connect(analyser);
+                    analyser.connect(audioContext.destination);
+                    audioSourceConnected = true;
+                }
+            });
+        } else {
+            if (!audioSourceConnected) {
+                source = audioContext.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                audioSourceConnected = true;
+            }
+        }
     }
-  }
 
-  analyser.fftSize = 256;
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Uint8Array(bufferLength);
 
-  function resizeCanvas() {
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-  }
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
 
-  function loadTrack(index) {
-    const track = tracks[index];
-    audio.src = track.src;
-    isPlaying = false;
-    playPauseButton.textContent = 'Play';
-
-    const newTag = track.isNew ? `<span class="rainbow-new">NEW</span>` : '';
-    currentTrack.innerHTML = `Now Playing: ${track.title} ${newTag}`;
-    updateMediaSession();
-  }
-
-  function togglePlayback() {
-    if (audio.paused) {
-      audio.play();
-      isPlaying = true;
-      playPauseButton.textContent = 'Pause';
-    } else {
-      audio.pause();
-      isPlaying = false;
-      playPauseButton.textContent = 'Play';
+    function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
     }
-  }
 
-  playPauseButton.addEventListener('click', () => {
-    if (audioContext.state === 'suspended') {
-      audioContext.resume().then(() => {
-        connectAudioSource();
+    // Modified loadTrack function
+    function loadTrack(index, autoPlay = false) { // Added autoPlay parameter
+        const track = tracks[index];
+        audio.src = track.src;
+
+        const newTag = track.isNew ? `<span class="rainbow-new">NEW</span>` : '';
+        currentTrack.innerHTML = `Now Playing: ${track.title} ${newTag}`;
+        updateMediaSession();
+
+        if (autoPlay) {
+            // Attempt to play immediately. User interaction usually needed to resume AudioContext.
+            // We handle AudioContext resume in playPauseButton click and subsequent auto-plays.
+            ensureAudioContextAndSource(); // Ensure context is running and source connected
+            audio.play().then(() => {
+                isPlaying = true;
+                playPauseButton.textContent = 'Pause';
+                drawVisualizer(); // Start visualizer immediately if playing
+            }).catch(error => {
+                console.warn("Autoplay prevented:", error);
+                isPlaying = false;
+                playPauseButton.textContent = 'Play';
+                // If autoplay is prevented, the user will need to click play.
+                // The state is correctly set to "Play" for them to interact.
+            });
+        } else {
+            // If not auto-playing (e.g., initial load before user interaction)
+            isPlaying = false;
+            playPauseButton.textContent = 'Play';
+            // Reset seek bar visually
+            seekBarProgress.style.width = '0%';
+            seekBarThumb.style.left = '0px';
+        }
+    }
+
+    function togglePlayback() {
+        if (audio.paused) {
+            ensureAudioContextAndSource(); // Ensure context is running and source connected
+            audio.play();
+            isPlaying = true;
+            playPauseButton.textContent = 'Pause';
+            drawVisualizer(); // Make sure visualizer starts
+        } else {
+            audio.pause();
+            isPlaying = false;
+            playPauseButton.textContent = 'Play';
+        }
+    }
+
+    playPauseButton.addEventListener('click', () => {
         togglePlayback();
-      });
-    } else {
-      connectAudioSource();
-      togglePlayback();
+    });
+
+    prevButton.addEventListener('click', () => {
+        currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+        loadTrack(currentTrackIndex, true); // Auto-play after changing track
+    });
+
+    nextButton.addEventListener('click', () => {
+        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+        loadTrack(currentTrackIndex, true); // Auto-play after changing track
+    });
+
+    audio.addEventListener('timeupdate', () => {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        seekBarProgress.style.width = `${progress}%`;
+        const thumbPos = (progress / 100) * seekBar.offsetWidth;
+        seekBarThumb.style.left = `${thumbPos}px`;
+    });
+
+    seekBar.addEventListener('click', (e) => {
+        const rect = seekBar.getBoundingClientRect();
+        const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+        audio.currentTime = seekTime;
+        if (isPlaying) audio.play(); // Keep playing if it was playing
+    });
+
+    function drawVisualizer() {
+        // Only draw if audioContext is running AND the audio is actually playing
+        if (audioContext.state === 'running' && !audio.paused) {
+            requestAnimationFrame(drawVisualizer);
+            analyser.getByteFrequencyData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) * 0.6;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const angle = (i / bufferLength) * 2 * Math.PI;
+                const barHeight = (dataArray[i] / 255) * radius;
+                const x1 = centerX + Math.cos(angle) * radius;
+                const y1 = centerY + Math.sin(angle) * radius;
+                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+
+                ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
     }
-  });
 
-  prevButton.addEventListener('click', () => {
-    currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-    loadTrack(currentTrackIndex);
-    audio.play();
-    isPlaying = true;
-    playPauseButton.textContent = 'Pause';
-  });
-
-  nextButton.addEventListener('click', () => {
-    currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-    loadTrack(currentTrackIndex);
-    audio.play();
-    isPlaying = true;
-    playPauseButton.textContent = 'Pause';
-  });
-
-  audio.addEventListener('timeupdate', () => {
-    const progress = (audio.currentTime / audio.duration) * 100;
-    seekBarProgress.style.width = `${progress}%`;
-    const thumbPos = (progress / 100) * seekBar.offsetWidth;
-    seekBarThumb.style.left = `${thumbPos}px`;
-  });
-
-  seekBar.addEventListener('click', (e) => {
-    const rect = seekBar.getBoundingClientRect();
-    const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-    audio.currentTime = seekTime;
-    if (isPlaying) audio.play();
-  });
-
-  function drawVisualizer() {
-    if (audioContext.state === 'running') {
-      requestAnimationFrame(drawVisualizer);
-      analyser.getByteFrequencyData(dataArray);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = Math.min(centerX, centerY) * 0.6;
-
-      for (let i = 0; i < bufferLength; i++) {
-        const angle = (i / bufferLength) * 2 * Math.PI;
-        const barHeight = (dataArray[i] / 255) * radius;
-        const x1 = centerX + Math.cos(angle) * radius;
-        const y1 = centerY + Math.sin(angle) * radius;
-        const x2 = centerX + Math.cos(angle) * (radius + barHeight);
-        const y2 = centerY + Math.sin(angle) * (radius + barHeight);
-
-        ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-      }
+    // 🐐 Track plays in GoatCounter
+    function trackPlayed(trackTitle) {
+        if (window.goatcounter) {
+            goatcounter.count({
+                path: `/track/${encodeURIComponent(trackTitle)}`,
+                title: `Track Played: ${trackTitle}`
+            });
+        }
     }
-  }
 
-  // 🐐 Track plays in GoatCounter
-  function trackPlayed(trackTitle) {
-    if (window.goatcounter) {
-      goatcounter.count({
-        path: `/track/${encodeURIComponent(trackTitle)}`,
-        title: `Track Played: ${trackTitle}`
-      });
+    audio.addEventListener('play', () => {
+        drawVisualizer(); // Start visualizer when audio plays
+        trackPlayed(tracks[currentTrackIndex].title);
+    });
+
+    audio.addEventListener('pause', () => {
+        // You might want to stop or fade out visualizer if audio is paused,
+        // but the current drawVisualizer checks audio.paused, so it will stop.
+    });
+
+
+    audio.addEventListener('ended', () => {
+        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+        loadTrack(currentTrackIndex, true); // Auto-play next track when one ends
+    });
+
+    function updateMediaSession() {
+        if ('mediaSession' in navigator) {
+            const track = tracks[currentTrackIndex];
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: track.title,
+                artist: 'SRG774',
+                album: 'My Playlist',
+                artwork: [
+                    { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
+                ]
+            });
+
+            navigator.mediaSession.setActionHandler('play', () => {
+                togglePlayback(); // Use your existing togglePlayback
+            });
+
+            navigator.mediaSession.setActionHandler('pause', () => {
+                togglePlayback(); // Use your existing togglePlayback
+            });
+
+            navigator.mediaSession.setActionHandler('previoustrack', () => {
+                prevButton.click();
+            });
+
+            navigator.mediaSession.setActionHandler('nexttrack', () => {
+                nextButton.click();
+            });
+        }
     }
-  }
 
-  audio.addEventListener('play', () => {
-    drawVisualizer();
-    trackPlayed(tracks[currentTrackIndex].title);
-  });
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
-  audio.addEventListener('ended', () => {
-    currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-    loadTrack(currentTrackIndex);
-    audio.play();
-  });
+    // Initial load: Attempt to load the first track, but don't autoplay directly here.
+    // Modern browsers prevent autoplay without user interaction.
+    loadTrack(currentTrackIndex, false); // Do not autoPlay on initial page load
 
-  function updateMediaSession() {
-    if ('mediaSession' in navigator) {
-      const track = tracks[currentTrackIndex];
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: track.title,
-        artist: 'SRG774',
-        album: 'My Playlist',
-        artwork: [
-          { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
-        ]
-      });
 
-      navigator.mediaSession.setActionHandler('play', () => {
-        connectAudioSource();
-        audio.play();
-        isPlaying = true;
-        playPauseButton.textContent = 'Pause';
-      });
+    // Important: For initial autoplay to work, it *must* be initiated by a user gesture.
+    // If you want autoplay on initial load, you'll need to add a "Start" button
+    // or rely on the user clicking the initial "Play" button.
+    // The current setup allows auto-play after the *first* user interaction.
 
-      navigator.mediaSession.setActionHandler('pause', () => {
-        audio.pause();
-        isPlaying = false;
-        playPauseButton.textContent = 'Play';
-      });
-
-      navigator.mediaSession.setActionHandler('previoustrack', () => {
-        prevButton.click();
-      });
-
-      navigator.mediaSession.setActionHandler('nexttrack', () => {
-        nextButton.click();
-      });
-    }
-  }
-
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-  loadTrack(currentTrackIndex);
 </script>
 
 </body>
