@@ -20,7 +20,8 @@ Clone this repository.
 Open index.html in your browser.
 Enjoy listening to your favorite tracks with dynamic visual effects!
 
-**New** -
+**New**
+This music player now supports full offline playback thanks to a Service Worker.
 Now includes the latest tracks, marked with 'NEW'. Improved compression and audio enhancements applied. Fixed pause/play logic for a more intuitive experience.
 This project includes Bluetooth media control functionality, allowing you to skip tracks, play/pause, and navigate audio seamlessly using car controls or other connected devices
 
