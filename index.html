@@ -10,8 +10,11 @@
     <meta property="og:image" content="assets/android-chrome-512x512.png"/>
     <meta property="og:url" content="https://srg774.github.io/audio-visualizer/"/>
     <meta property="og:type" content="website"/>
-    <link rel="icon" href="assets/android-chrome-512x512.png" />
-    <link rel="apple-touch-icon" href="assets/android-chrome-512x512.png" />
+
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="shortcut icon" href="assets/favicon/favicon.ico">
+    <link rel="apple-touch-icon" href="assets/favicon/apple-touch-icon.png"> 
     <link rel="manifest" href="manifest.json" />
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
@@ -22,7 +25,13 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: #000;
+            /* Updated: Background image added. Ensure 'techno-background.jpg' is in 'assets/' */
+            background-image: url('assets/techno-background.jpg'); 
+            background-size: cover; /* Ensures the image covers the entire background */
+            background-position: center center; /* Centers the image */
+            background-repeat: no-repeat; /* Prevents the image from tiling */
+            background-attachment: fixed; /* Keeps the background static when scrolling (optional) */
+            background-color: #000; /* Fallback color if the image doesn't load */
             color: white;
             margin: 0;
             display: flex;
@@ -30,8 +39,22 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* Important for fixed background to prevent scrollbars */
             text-align: center;
+            position: relative; /* Needed for the ::before pseudo-element overlay */
+            z-index: 1; /* Ensures body content is above the overlay */
+        }
+
+        /* Optional: Add a semi-transparent black overlay for better text readability */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity as needed */
+            z-index: -1; /* Places the overlay behind the body's content */
         }
 
         h1 {
@@ -101,7 +124,7 @@
         canvas {
             width: 100%;
             height: 60vh;
-            background: transparent;
+            background: transparent; /* Keep this transparent so your body background shows */
         }
 
         footer {
