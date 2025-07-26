@@ -115,6 +115,9 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background 0.3s;
+            display: flex; /* Make buttons flex containers for SVG icons */
+            justify-content: center;
+            align-items: center;
         }
 
         .controls button:hover {
@@ -136,6 +139,20 @@
             width: 40px;
             height: 40px;
         }
+
+        /* Adjustments for the main control buttons */
+        .controls .icon-button {
+            border-radius: 5px; /* Square corners for play/pause/next/prev buttons */
+            width: 50px; /* Slightly wider to accommodate icons */
+            height: 50px; /* Slightly taller */
+            padding: 10px; /* Adjust padding for visual balance */
+        }
+
+        .controls .icon-button svg {
+            width: 24px; /* Larger icons for main controls */
+            height: 24px;
+        }
+
 
         .icon-button:hover {
             background: #666;
@@ -261,9 +278,23 @@
     <h2 id="current-track-display"></h2>
 
     <div class="controls">
-        <button id="prev-button">Previous</button>
-        <button id="play-pause-button">Play</button>
-        <button id="next-button">Next</button>
+        <button id="prev-button" class="icon-button" aria-label="Previous Track">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                <line x1="5" y1="19" x2="5" y2="5"></line>
+            </svg>
+        </button>
+        <button id="play-pause-button" class="icon-button" aria-label="Play/Pause">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+        </button>
+        <button id="next-button" class="icon-button" aria-label="Next Track">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                <line x1="19" y1="5" x2="19" y2="19"></line>
+            </svg>
+        </button>
     </div>
 
     <div class="seek-bar-container">
@@ -405,6 +436,20 @@
         }
     }
 
+    // SVG icons for play and pause
+    const playIconSVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+    `;
+    const pauseIconSVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+    `;
+
+
     /**
      * Loads a track and optionally attempts to auto-play it.
      * @param {number} index - The index of the track to load.
@@ -432,7 +477,7 @@
             ensureAudioContextAndSource();
             audio.play().then(() => {
                 isPlaying = true;
-                playPauseButton.textContent = 'Pause';
+                playPauseButton.innerHTML = pauseIconSVG; // Set to pause icon
                 drawVisualizer(); // Start visualizer
                 // hasUserInitiatedPlayback = true; // This flag should ideally be set only on the very first user interaction
                 setShimmerState(true); // Start shimmer
@@ -440,13 +485,13 @@
             }).catch(error => {
                 console.warn("Autoplay prevented:", error);
                 isPlaying = false;
-                playPauseButton.textContent = 'Play';
+                playPauseButton.innerHTML = playIconSVG; // Set to play icon if autoplay fails
                 setShimmerState(false); // Stop shimmer if play fails
             });
         } else {
             isPlaying = false;
             audio.pause();
-            playPauseButton.textContent = 'Play';
+            playPauseButton.innerHTML = playIconSVG; // Always show play icon if not playing
             // Reset seek bar visuals for new track load
             seekBarProgress.style.width = '0%';
             seekBarThumb.style.left = '0px';
@@ -476,7 +521,7 @@
         if (audio.paused) {
             audio.play().then(() => {
                 isPlaying = true;
-                playPauseButton.textContent = 'Pause';
+                playPauseButton.innerHTML = pauseIconSVG; // Change to pause icon
                 drawVisualizer();
                 hasUserInitiatedPlayback = true; // Set this flag on the very first successful play
                 setShimmerState(true); // Start shimmer on play
@@ -484,13 +529,13 @@
             }).catch(error => {
                 console.warn("Playback prevented (likely no user gesture yet):", error);
                 isPlaying = false;
-                playPauseButton.textContent = 'Play';
+                playPauseButton.innerHTML = playIconSVG; // Change back to play icon
                 setShimmerState(false); // Stop shimmer if play fails
             });
         } else {
             audio.pause();
             isPlaying = false;
-            playPauseButton.textContent = 'Play';
+            playPauseButton.innerHTML = playIconSVG; // Change to play icon
             setShimmerState(false); // Stop shimmer on pause
         }
     }
@@ -525,11 +570,12 @@
             const progress = (audio.currentTime / audio.duration) * 100;
             seekBarProgress.style.width = `${progress}%`;
             // Calculate thumb position relative to the seek bar's width
-            const thumbPos = (progress / 100) * seekBar.offsetWidth;
-            // Adjust thumb position to account for its own width so it doesn't go off the end
-            // Subtract half the thumb's width to center it on the progress line
             const thumbWidth = seekBarThumb.offsetWidth;
-            const adjustedThumbPos = Math.max(0, Math.min(seekBar.offsetWidth - thumbWidth, thumbPos - (thumbWidth / 2)));
+            const seekBarWidth = seekBar.offsetWidth;
+            const thumbPos = (progress / 100) * seekBarWidth;
+            // Adjust thumb position to account for its own width so it doesn't go off the end
+            // Center the thumb on the current progress point
+            const adjustedThumbPos = Math.max(0, Math.min(seekBarWidth - thumbWidth / 2, thumbPos - (thumbWidth / 2)));
             seekBarThumb.style.left = `${adjustedThumbPos}px`;
         }
     });
@@ -667,7 +713,7 @@
             } else if (tracks.length < oldLength) {
                 message = "Tracks removed.";
             } else {
-                // Check if any 'isNew' tags have changed or other metadata (though we only compare title/src/isNew)
+                // Could be metadata changes etc.
                 message = "Track list updated!";
             }
             showStatusMessage(message);
@@ -693,7 +739,7 @@
 
     // Initial load: Load the first track, but DO NOT auto-play.
     // The player will be in a "Play" ready state, allowing silent track browse.
-    loadTrack(currentTrackIndex, false);
+    loadTrack(currentTrackIndex, false); // Load with play icon initially
 </script>
 <script src="register-sw.js"></script>
 </body>
