@@ -4,7 +4,7 @@ https://srg774.github.io/audio-visualizer/
 
 This project is a web-based audio player featuring a custom interface with a built-in visualizer and track controls. The player allows users to play, pause, and switch between tracks, with a visually appealing frequency bar that reacts to the music. It includes a custom seek bar for easy navigation through tracks.
 
-![Screenshot](assets/Screenshot 2025-07-26 09.35.35.png)
+![Screenshot of Music Player](assets/Screenshot 2025-07-26 09.35.35.png)
 
 Features:
 Play, pause, and skip tracks.
