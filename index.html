@@ -56,24 +56,53 @@
         }
 
         h1 {
-            font-size: 0rem; /* Kept your original 0rem, adjust if you want it visible */
+            font-size: 0rem;
             margin-top: 20px;
         }
 
         h2 {
             font-size: 1.5rem;
             margin-bottom: 20px;
+            /* Shimmer effect container styles */
+            position: relative;
+            display: inline-block; /* Shrink to content width */
+            overflow: hidden; /* Hide the shimmer when it's outside the text area */
+            padding: 5px 0; /* Give some vertical padding for the shimmer to fully pass */
+        }
+
+        /* Shimmer effect pseudo-element */
+        h2 .shimmer-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%; /* Start off-screen to the left */
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.3), transparent); /* Subtle black shimmer */
+            animation: shimmer 2.5s infinite linear; /* Adjust duration and timing function */
+            animation-play-state: paused; /* Start paused, play on track playing */
+            pointer-events: none; /* Ensure clicks pass through */
+        }
+
+        /* Play the shimmer when h2 has the .shimmer-active class */
+        h2.shimmer-active .shimmer-effect::before {
+            animation-play-state: running;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .controls {
             display: flex;
             gap: 15px;
-            margin: 20px 0;
-            width: 80%; /* Ensure controls can manage its children's positioning */
-            max-width: 600px; /* Example max-width for consistency */
-            justify-content: center; /* Center main buttons */
-            align-items: center; /* Align items vertically */
-            position: relative; /* Allow absolute positioning of children if needed */
+            margin: 20px auto; /* Centered with auto margins */
+            width: 80%;
+            max-width: 600px;
+            justify-content: center;
+            align-items: center;
+            position: relative;
         }
 
         .controls button {
@@ -90,21 +119,20 @@
             background: #666;
         }
 
-        /* Style for the new icon button */
+        /* Style for all icon buttons (including the refresh button) */
         .icon-button {
-            background: none; /* Make background transparent */
-            border: 2px solid #666; /* Subtle border */
-            color: white; /* Icon color */
-            padding: 8px; /* Adjust padding */
-            border-radius: 50%; /* Make it circular */
+            background: none;
+            border: 2px solid #666;
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
             transition: background 0.3s, border-color 0.3s;
-            width: 40px; /* Fixed width */
-            height: 40px; /* Fixed height */
-            margin-left: auto; /* Push it to the right */
+            width: 40px;
+            height: 40px;
         }
 
         .icon-button:hover {
@@ -113,473 +141,9 @@
         }
 
         .icon-button svg {
-            width: 20px; /* Icon size */
+            width: 20px;
             height: 20px;
         }
 
-        .seek-bar-container {
-            width: 80%;
-            height: 12px;
-            margin: 20px auto;
-            position: relative;
-        }
-
-        .seek-bar {
-            width: 100%;
-            height: 100%;
-            background: #333;
-            border-radius: 6px;
-            cursor: pointer;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .seek-bar-progress {
-            height: 100%;
-            background: linear-gradient(90deg, #00f, #00bfff);
-            width: 0%;
-        }
-
-        .seek-bar-thumb {
-            position: absolute;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 14px;
-            height: 14px;
-            background: white;
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        canvas {
-            width: 100%;
-            height: 60vh;
-            background: transparent;
-        }
-
-        footer {
-            margin-top: auto;
-            padding: 10px;
-        }
-
-        .rainbow-new {
-            font-style: italic;
-            font-weight: bold;
-            margin-left: 10px;
-            background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: rainbow 3s linear infinite;
-            display: inline-block;
-        }
-
-        @keyframes rainbow {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-        }
-
-        /* For the status message */
-        .status-message {
-            position: fixed; /* Fixed position relative to viewport */
-            top: 20px; /* 20px from the top */
-            left: 50%; /* Center horizontally */
-            transform: translateX(-50%); /* Adjust for true centering */
-            background-color: rgba(50, 50, 50, 0.9); /* Dark semi-transparent background */
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            opacity: 0; /* Start hidden */
-            visibility: hidden; /* Start hidden */
-            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
-            z-index: 1000; /* Ensure it's on top of other content */
-            font-size: 0.9rem;
-            white-space: nowrap; /* Prevent text wrapping */
-        }
-
-        .status-message.show {
-            opacity: 1;
-            visibility: visible;
-        }
-    </style>
-</head>
-<body>
-
-    <h1>SRG774 &copy;</h1>
-    <h2 id="current-track-display">Now Playing:</h2>
-
-    <div class="controls">
-        <button id="prev-button">Previous</button>
-        <button id="play-pause-button">Play</button>
-        <button id="next-button">Next</button>
-        <button id="refresh-tracks-button" class="icon-button" aria-label="Refresh Track List">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.5 9a9 9 0 0 1 16.5 0C21.78 11.23 23 13.62 23 16a9 9 0 0 1-18 0c0-2.38 1.22-4.77 3.5-7z"></path></svg>
-        </button>
-    </div>
-
-    <div class="seek-bar-container">
-        <div class="seek-bar" id="seek-bar">
-            <div class="seek-bar-progress" id="seek-bar-progress"></div>
-            <div class="seek-bar-thumb" id="seek-bar-thumb"></div>
-        </div>
-    </div>
-
-    <audio id="audio"></audio>
-    <canvas id="visualizer"></canvas>
-
-    <footer><p>SRG774 &copy;</p></footer>
-
-    <div id="status-message" class="status-message"></div>
-
-<script>
-    // Define the initial set of tracks.
-    // When you want to "add a new track," you would manually update this array
-    // in your HTML file, then use the "Refresh Tracks" button on the page.
-    const initialTracksDefinition = [
-        { title: "Caged", src: "assets/Cage.wav", isNew: true },
-        { title: "Stack", src: "assets/Perhaps1.wav" },
-        { title: "Waves", src: "assets/waves.wav" },
-        { title: "Pulse", src: "assets/Pulse_.wav" },
-        { title: "98", src: "assets/'981.wav" },
-        { title: "Synthétique", src: "assets/nuhouse21.mp3" },
-        { title: "Tin Hat", src: "assets/Tin Hat1.wav" },
-        { title: "Highest", src: "assets/Throne21.wav" },
-        { title: "Rise", src: "assets/Rise.wav" },
-        { title: "Revos", src: "assets/revos (1) (1).wav" }
-        // Example of a new track you might add later:
-        // { title: "Dune", src: "assets/Dune.wav", isNew: true }
-    ];
-
-    // The 'tracks' array that the player actively uses. It will be updated by refreshTrackList.
-    let tracks = [...initialTracksDefinition];
-
-    let currentTrackIndex = Math.floor(Math.random() * tracks.length);
-    let isPlaying = false;
-    let hasUserInitiatedPlayback = false; // Flag to track if user has initiated playback at least once
-
-    const audio = document.getElementById('audio');
-    const currentTrackDisplay = document.getElementById('current-track-display'); // Renamed for clarity
-    const playPauseButton = document.getElementById('play-pause-button');
-    const prevButton = document.getElementById('prev-button');
-    const nextButton = document.getElementById('next-button');
-    const seekBar = document.getElementById('seek-bar');
-    const seekBarProgress = document.getElementById('seek-bar-progress');
-    const seekBarThumb = document.getElementById('seek-bar-thumb');
-    const canvas = document.getElementById('visualizer');
-    const ctx = canvas.getContext('2d');
-
-    // New element references for the refresh feature
-    const refreshTracksButton = document.getElementById('refresh-tracks-button');
-    const statusMessageDiv = document.getElementById('status-message');
-
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const compressor = audioContext.createDynamicsCompressor(); // Dynamics Compressor for "auto-max" effect
-
-    let source; // Declare source here but connect later
-    let audioSourceConnected = false; // Flag to track if the audio source has been connected
-
-    // Function to ensure the AudioContext is running and source is connected
-    function ensureAudioContextAndSource() {
-        if (audioContext.state === 'suspended') {
-            audioContext.resume().then(() => {
-                console.log('AudioContext resumed!');
-                if (!audioSourceConnected) {
-                    source = audioContext.createMediaElementSource(audio);
-                    source.connect(compressor); // Source connects to compressor
-                    compressor.connect(analyser); // Compressor connects to analyser
-                    analyser.connect(audioContext.destination); // Analyser connects to speakers
-                    audioSourceConnected = true;
-                }
-            });
-        } else {
-            if (!audioSourceConnected) {
-                source = audioContext.createMediaElementSource(audio);
-                source.connect(compressor); // Source connects to compressor
-                compressor.connect(analyser); // Compressor connects to analyser
-                analyser.connect(audioContext.destination); // Analyser connects to speakers
-                audioSourceConnected = true;
-            }
-        }
-    }
-
-    analyser.fftSize = 256;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    function resizeCanvas() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-    }
-
-    /**
-     * Loads a track and optionally attempts to auto-play it.
-     * @param {number} index - The index of the track to load.
-     * @param {boolean} shouldAutoPlay - Whether the track should attempt to auto-play.
-     */
-    function loadTrack(index, shouldAutoPlay = false) {
-        // Ensure index is within bounds of the potentially new 'tracks' array length
-        if (index >= tracks.length || index < 0) {
-            index = 0; // Default to first track if out of bounds
-            currentTrackIndex = 0;
-        } else {
-            currentTrackIndex = index; // Update the global index
-        }
-
-
-        const track = tracks[currentTrackIndex]; // Use currentTrackIndex here
-        audio.src = track.src;
-
-        const newTag = track.isNew ? `<span class="rainbow-new">NEW</span>` : '';
-        currentTrackDisplay.innerHTML = `Now Playing: ${track.title} ${newTag}`; // Use currentTrackDisplay
-        updateMediaSession();
-
-        if (shouldAutoPlay && hasUserInitiatedPlayback) {
-            // Attempt to play only if auto-play is requested AND user has already interacted
-            ensureAudioContextAndSource();
-            audio.play().then(() => {
-                isPlaying = true;
-                playPauseButton.textContent = 'Pause';
-                drawVisualizer(); // Start visualizer when playing
-            }).catch(error => {
-                console.warn("Autoplay prevented:", error);
-                isPlaying = false; // Reset to play state if autoplay failed
-                playPauseButton.textContent = 'Play';
-            });
-        } else {
-            // This path is taken for initial page load OR Next/Prev clicks BEFORE user has pressed Play
-            isPlaying = false; // Ensure it's not marked as playing
-            audio.pause(); // Ensure audio is paused if it somehow started
-            playPauseButton.textContent = 'Play'; // Button should always say "Play"
-            // Reset seek bar visually
-            seekBarProgress.style.width = '0%';
-            seekBarThumb.style.left = '0px';
-        }
-    }
-
-    function togglePlayback() {
-        if (audio.paused) {
-            ensureAudioContextAndSource(); // Ensure context is running and source connected
-            audio.play().then(() => {
-                isPlaying = true;
-                playPauseButton.textContent = 'Pause';
-                drawVisualizer();
-                hasUserInitiatedPlayback = true; // Set this flag on the very first successful play
-            }).catch(error => {
-                console.warn("Playback prevented (likely no user gesture yet):", error);
-                // If play fails (e.g., no user gesture), reset state
-                isPlaying = false;
-                playPauseButton.textContent = 'Play';
-                // hasUserInitiatedPlayback remains false if play fails here
-            });
-        } else {
-            audio.pause();
-            isPlaying = false;
-            playPauseButton.textContent = 'Play';
-            // Visualizer will stop drawing automatically due to `audio.paused` check
-        }
-    }
-
-    playPauseButton.addEventListener('click', () => {
-        togglePlayback();
-    });
-
-    prevButton.addEventListener('click', () => {
-        currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-        // Auto-play only if user has already initiated playback at least once
-        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
-    });
-
-    nextButton.addEventListener('click', () => {
-        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-        // Auto-play only if user has already initiated playback at least once
-        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
-    });
-
-    audio.addEventListener('timeupdate', () => {
-        if (!isNaN(audio.duration)) { // Ensure duration is available to prevent NaN issues
-            const progress = (audio.currentTime / audio.duration) * 100;
-            seekBarProgress.style.width = `${progress}%`;
-            const thumbPos = (progress / 100) * seekBar.offsetWidth;
-            seekBarThumb.style.left = `${thumbPos}px`;
-        }
-    });
-
-    seekBar.addEventListener('click', (e) => {
-        const rect = seekBar.getBoundingClientRect();
-        const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-        audio.currentTime = seekTime;
-        // If it was playing, or if the user has previously interacted, attempt to resume playing after seeking.
-        if (isPlaying || hasUserInitiatedPlayback) {
-            ensureAudioContextAndSource();
-            audio.play().catch(error => console.warn("Seek-and-play prevented:", error));
-        }
-    });
-
-    function drawVisualizer() {
-        // Only draw if audioContext is running AND the audio is actually playing
-        if (audioContext.state === 'running' && !audio.paused) {
-            requestAnimationFrame(drawVisualizer);
-            analyser.getByteFrequencyData(dataArray);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = Math.min(centerX, centerY) * 0.6;
-
-            for (let i = 0; i < bufferLength; i++) {
-                const angle = (i / bufferLength) * 2 * Math.PI;
-                const barHeight = (dataArray[i] / 255) * radius;
-                const x1 = centerX + Math.cos(angle) * radius;
-                const y1 = centerY + Math.sin(angle) * radius;
-                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
-                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
-
-                ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-            }
-        }
-    }
-
-    // 🐐 Track plays in GoatCounter
-    function trackPlayed(trackTitle) {
-        if (window.goatcounter && hasUserInitiatedPlayback) { // Only track if user has interacted
-            goatcounter.count({
-                path: `/track/${encodeURIComponent(trackTitle)}`,
-                title: `Track Played: ${trackTitle}`
-            });
-        }
-    }
-
-    audio.addEventListener('play', () => {
-        drawVisualizer(); // Start visualizer when audio plays
-        trackPlayed(tracks[currentTrackIndex].title);
-    });
-
-    audio.addEventListener('pause', () => {
-        // Visualizer will stop drawing automatically due to `audio.paused` check in drawVisualizer()
-    });
-
-    audio.addEventListener('ended', () => {
-        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-        // Auto-play the next track only if user has already initiated playback
-        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
-    });
-
-    function updateMediaSession() {
-        if ('mediaSession' in navigator) {
-            const track = tracks[currentTrackIndex];
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: track.title,
-                artist: 'SRG774',
-                album: 'My Playlist',
-                artwork: [
-                    { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
-                ]
-            });
-
-            // Set action handlers based on whether playback has been initiated by the user
-            navigator.mediaSession.setActionHandler('play', () => {
-                togglePlayback();
-            });
-
-            // Only provide a pause handler if we expect to be able to pause
-            navigator.mediaSession.setActionHandler('pause', hasUserInitiatedPlayback ? () => {
-                togglePlayback();
-            } : null);
-
-            navigator.mediaSession.setActionHandler('previoustrack', () => {
-                prevButton.click();
-            });
-
-            navigator.mediaSession.setActionHandler('nexttrack', () => {
-                nextButton.click();
-            });
-        }
-    }
-
-    // --- NEW FUNCTIONS FOR TRACK REFRESH ---
-
-    // Function to display temporary status messages
-    function showStatusMessage(message, duration = 3000) {
-        statusMessageDiv.textContent = message;
-        statusMessageDiv.classList.add('show');
-        setTimeout(() => {
-            statusMessageDiv.classList.remove('show');
-        }, duration);
-    }
-
-    /**
-     * Compares two track lists for differences.
-     * @param {Array<Object>} oldList - The existing list of tracks.
-     * @param {Array<Object>} newList - The new list of tracks.
-     * @returns {boolean} True if lists are different (length, or title/src mismatch), false otherwise.
-     */
-    function haveTracksChanged(oldList, newList) {
-        if (oldList.length !== newList.length) {
-            return true; // Different number of tracks
-        }
-        for (let i = 0; i < oldList.length; i++) {
-            // Simple comparison of title and source for changes
-            if (oldList[i].title !== newList[i].title || oldList[i].src !== newList[i].src) {
-                return true; // Track details changed
-            }
-        }
-        return false; // No changes detected
-    }
-
-    // Function to refresh the track list from the hardcoded 'initialTracksDefinition'
-    function refreshTrackList() {
-        // We compare against `initialTracksDefinition` because that represents the
-        // "source of truth" as defined in the HTML file for this client-side example.
-        // In a real application with a backend, `newTracks` would come from an API call.
-        const newTracks = [...initialTracksDefinition]; // Create a fresh copy to compare
-
-        // Check if the current 'tracks' array is different from the 'newTracks'
-        if (haveTracksChanged(tracks, newTracks)) {
-            const oldLength = tracks.length;
-            tracks = newTracks; // Update the active tracks array
-
-            // Determine if new tracks were added or removed
-            let message = "";
-            if (tracks.length > oldLength) {
-                message = "New tracks added!";
-            } else if (tracks.length < oldLength) {
-                message = "Tracks removed.";
-            } else {
-                message = "Track list updated!"; // Could be metadata changes etc.
-            }
-            showStatusMessage(message);
-            console.log("Track list updated:", tracks);
-
-            // Re-evaluate current track index in case it's out of bounds with new list
-            // or if we want to reset to the first track after an update.
-            if (currentTrackIndex >= tracks.length) {
-                currentTrackIndex = 0; // Reset to start if current index is invalid
-            }
-            loadTrack(currentTrackIndex, false); // Load current/first track, but don't auto-play
-                                                 // just in case user didn't initiate playback yet.
-        } else {
-            showStatusMessage("No changes to track list.");
-            console.log("No changes in track list detected.");
-        }
-    }
-
-    // --- INITIALIZATION & EVENT LISTENERS ---
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // Add event listener for the new refresh button
-    refreshTracksButton.addEventListener('click', refreshTrackList);
-
-    // Initial load: Load the first track, but DO NOT auto-play.
-    // The player will be in a "Play" ready state, allowing silent track browse.
-    loadTrack(currentTrackIndex, false);
-</script>
-<script src="register-sw.js"></script>
-</body>
-</html>
+        /* Specific position for the refresh button */
+        .icon-button.bottom
