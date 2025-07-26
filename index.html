@@ -231,7 +231,8 @@
         /* Status message styling (for "New tracks added!" etc.) */
         .status-message {
             position: fixed; /* Fixed position relative to viewport */
-            top: 20px; /* 20px from the top */
+            /* Adjusted positioning to be above the refresh button area */
+            bottom: 80px; /* Approximately above the refresh button, adjust as needed */
             left: 50%; /* Center horizontally */
             transform: translateX(-50%); /* Adjust for true centering */
             background-color: rgba(50, 50, 50, 0.9); /* Dark semi-transparent background */
@@ -279,7 +280,11 @@
     <footer>
         <p>SRG774 &copy;</p>
         <button id="refresh-tracks-button" class="icon-button bottom-right" aria-label="Refresh Track List">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.5 9a9 9 0 0 1 16.5 0C21.78 11.23 23 13.62 23 16a9 9 0 0 1-18 0c0-2.38 1.22-4.77 3.5-7z"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6"></path>
+                <path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.32L23 10M1 14l4.64 4.32A9 9 0 0 0 20.49 15"></path>
+            </svg>
         </button>
     </footer>
 
@@ -290,7 +295,7 @@
     // When you want to "add a new track," you would manually update this array
     // in your HTML file, then use the "Refresh Tracks" button on the page.
     const initialTracksDefinition = [
-        { title: "Caged", src: "assets/Cage.wav", isNew: true },
+        { title: "Caged", src: "assets/Cage.wav", isNew: true }, // Marked as new
         { title: "Stack", src: "assets/Perhaps1.wav" },
         { title: "Waves", src: "assets/waves.wav" },
         { title: "Pulse", src: "assets/Pulse_.wav" },
@@ -376,28 +381,25 @@
      * @param {boolean} isActive - True to activate shimmer, false to deactivate.
      */
     function setShimmerState(isActive) {
+        // Find the text content to be shimmered, excluding the "NEW" tag
+        let trackTitleText = tracks[currentTrackIndex]?.title || ""; // Get current track title
+        let actualDisplayContent = trackTitleText;
+
+        // Ensure currentTrackDisplay is cleared before re-populating to prevent duplicates
+        currentTrackDisplay.innerHTML = '';
+
         if (isActive) {
-            // Check if shimmer span already exists to avoid re-wrapping
-            if (!currentTrackDisplay.querySelector('.shimmer-effect')) {
-                const trackTitleText = currentTrackDisplay.textContent;
-                // Temporarily store the rainbow-new span if it exists
-                const rainbowNewSpan = currentTrackDisplay.querySelector('.rainbow-new');
-                currentTrackDisplay.innerHTML = `<span class="shimmer-effect">${trackTitleText}</span>`;
-                if (rainbowNewSpan) {
-                    currentTrackDisplay.appendChild(rainbowNewSpan); // Re-add it
-                }
+            // Apply shimmer to the title part
+            currentTrackDisplay.innerHTML = `<span class="shimmer-effect">${trackTitleText}</span>`;
+            if (tracks[currentTrackIndex]?.isNew) {
+                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
             }
             currentTrackDisplay.classList.add('shimmer-active');
         } else {
-            // Remove the shimmer effect and reset the text content directly
-            const shimmerSpan = currentTrackDisplay.querySelector('.shimmer-effect');
-            if (shimmerSpan) {
-                currentTrackDisplay.textContent = shimmerSpan.textContent; // Extract text
-            }
-            // Re-add rainbow-new if it existed
-            const track = tracks[currentTrackIndex];
-            if (track && track.isNew) {
-                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
+            // Simply display the title and "NEW" tag if applicable
+            currentTrackDisplay.textContent = trackTitleText; // Set text content first
+            if (tracks[currentTrackIndex]?.isNew) {
+                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`; // Append rainbow tag
             }
             currentTrackDisplay.classList.remove('shimmer-active');
         }
@@ -421,11 +423,8 @@
         audio.src = track.src; // Set the audio source
 
         // Update track title display and shimmer state
-        currentTrackDisplay.textContent = track.title; // Set text content first
-        if (track.isNew) {
-            currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`; // Append rainbow tag
-        }
-        setShimmerState(false); // Ensure shimmer is off when loading a new track
+        // This function call handles setting the "NEW" tag correctly now.
+        setShimmerState(false); // Always set initial state to false (no shimmer) on load
 
         updateMediaSession(); // Update browser's media session info
 
@@ -435,8 +434,9 @@
                 isPlaying = true;
                 playPauseButton.textContent = 'Pause';
                 drawVisualizer(); // Start visualizer
-                hasUserInitiatedPlayback = true;
+                // hasUserInitiatedPlayback = true; // This flag should ideally be set only on the very first user interaction
                 setShimmerState(true); // Start shimmer
+                trackPlayed(track.title); // Track play only on successful play
             }).catch(error => {
                 console.warn("Autoplay prevented:", error);
                 isPlaying = false;
@@ -456,14 +456,31 @@
 
     // Toggle Play/Pause functionality
     function togglePlayback() {
+        // If audioContext is suspended (e.g., initially or after some time), resume it on user gesture
+        if (audioContext.state === 'suspended' || audioContext.state === 'interrupted') {
+             audioContext.resume().then(() => {
+                console.log('AudioContext resumed from togglePlayback!');
+                // Continue with play/pause logic after successful resume
+                performPlaybackToggle();
+            }).catch(e => console.error("Error resuming AudioContext:", e));
+        } else {
+            performPlaybackToggle();
+        }
+    }
+
+    function performPlaybackToggle() {
+        if (!audioSourceConnected) {
+            ensureAudioContextAndSource(); // Connect nodes if not already connected
+        }
+
         if (audio.paused) {
-            ensureAudioContextAndSource(); // Ensure context is running and source connected
             audio.play().then(() => {
                 isPlaying = true;
                 playPauseButton.textContent = 'Pause';
                 drawVisualizer();
                 hasUserInitiatedPlayback = true; // Set this flag on the very first successful play
                 setShimmerState(true); // Start shimmer on play
+                trackPlayed(tracks[currentTrackIndex]?.title); // Track play
             }).catch(error => {
                 console.warn("Playback prevented (likely no user gesture yet):", error);
                 isPlaying = false;
@@ -477,6 +494,7 @@
             setShimmerState(false); // Stop shimmer on pause
         }
     }
+
 
     // Event listeners for player controls
     playPauseButton.addEventListener('click', togglePlayback);
@@ -506,8 +524,13 @@
         if (!isNaN(audio.duration)) { // Still good to check here just in case, or during initial loading phase
             const progress = (audio.currentTime / audio.duration) * 100;
             seekBarProgress.style.width = `${progress}%`;
+            // Calculate thumb position relative to the seek bar's width
             const thumbPos = (progress / 100) * seekBar.offsetWidth;
-            seekBarThumb.style.left = `${thumbPos}px`;
+            // Adjust thumb position to account for its own width so it doesn't go off the end
+            // Subtract half the thumb's width to center it on the progress line
+            const thumbWidth = seekBarThumb.offsetWidth;
+            const adjustedThumbPos = Math.max(0, Math.min(seekBar.offsetWidth - thumbWidth, thumbPos - (thumbWidth / 2)));
+            seekBarThumb.style.left = `${adjustedThumbPos}px`;
         }
     });
 
@@ -536,7 +559,7 @@
 
             for (let i = 0; i < bufferLength; i++) {
                 const angle = (i / bufferLength) * 2 * Math.PI;
-                const barHeight = (dataArray[i] / 255) * radius;
+                const barHeight = (dataArray[i] / 255) * radius * 0.8; // Reduced height for more controlled visualization
                 const x1 = centerX + Math.cos(angle) * radius;
                 const y1 = centerY + Math.sin(angle) * radius;
                 const x2 = centerX + Math.cos(angle) * (radius + barHeight);
@@ -573,19 +596,21 @@
     function updateMediaSession() {
         if ('mediaSession' in navigator) {
             const track = tracks[currentTrackIndex];
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: track.title,
-                artist: 'SRG774',
-                album: 'My Playlist',
-                artwork: [
-                    { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
-                ]
-            });
+            if (track) { // Ensure track exists before setting metadata
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: track.title,
+                    artist: 'SRG774',
+                    album: 'My Playlist',
+                    artwork: [
+                        { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
+                    ]
+                });
 
-            navigator.mediaSession.setActionHandler('play', () => { togglePlayback(); });
-            navigator.mediaSession.setActionHandler('pause', hasUserInitiatedPlayback ? () => { togglePlayback(); } : null);
-            navigator.mediaSession.setActionHandler('previoustrack', () => { prevButton.click(); });
-            navigator.mediaSession.setActionHandler('nexttrack', () => { nextButton.click(); });
+                navigator.mediaSession.setActionHandler('play', () => { togglePlayback(); });
+                navigator.mediaSession.setActionHandler('pause', hasUserInitiatedPlayback ? () => { togglePlayback(); } : null);
+                navigator.mediaSession.setActionHandler('previoustrack', () => { prevButton.click(); });
+                navigator.mediaSession.setActionHandler('nexttrack', () => { nextButton.click(); });
+            }
         }
     }
 
@@ -595,24 +620,32 @@
     function showStatusMessage(message, duration = 3000) {
         statusMessageDiv.textContent = message;
         statusMessageDiv.classList.add('show');
-        setTimeout(() => {
+        // Clear any existing timeout to prevent quick flashes or overridden messages
+        if (statusMessageDiv.timeoutId) {
+            clearTimeout(statusMessageDiv.timeoutId);
+        }
+        statusMessageDiv.timeoutId = setTimeout(() => {
             statusMessageDiv.classList.remove('show');
+            statusMessageDiv.timeoutId = null;
         }, duration);
     }
 
     /**
      * Compares two track lists for differences.
+     * Checks for changes in length, title, src, and isNew status.
      * @param {Array<Object>} oldList - The existing list of tracks.
      * @param {Array<Object>} newList - The new list of tracks.
-     * @returns {boolean} True if lists are different (length, or title/src mismatch), false otherwise.
+     * @returns {boolean} True if lists are different (length, or title/src/isNew mismatch), false otherwise.
      */
     function haveTracksChanged(oldList, newList) {
         if (oldList.length !== newList.length) {
             return true; // Different number of tracks
         }
         for (let i = 0; i < oldList.length; i++) {
-            // Simple comparison of title and source for changes
-            if (oldList[i].title !== newList[i].i || oldList[i].src !== newList[i].src) { // Typo fix: oldList[i].i -> oldList[i].title
+            // Compare title, source, and isNew status
+            if (oldList[i].title !== newList[i].title ||
+                oldList[i].src !== newList[i].src ||
+                !!oldList[i].isNew !== !!newList[i].isNew) { // Ensure boolean comparison for isNew
                 return true; // Track details changed
             }
         }
@@ -621,7 +654,8 @@
 
     // Function to refresh the track list from the hardcoded 'initialTracksDefinition'
     function refreshTrackList() {
-        const newTracks = [...initialTracksDefinition]; // Create a fresh copy to compare
+        // Create a deep copy to ensure proper comparison
+        const newTracks = JSON.parse(JSON.stringify(initialTracksDefinition));
 
         if (haveTracksChanged(tracks, newTracks)) {
             const oldLength = tracks.length;
@@ -633,7 +667,8 @@
             } else if (tracks.length < oldLength) {
                 message = "Tracks removed.";
             } else {
-                message = "Track list updated!"; // Could be metadata changes etc.
+                // Check if any 'isNew' tags have changed or other metadata (though we only compare title/src/isNew)
+                message = "Track list updated!";
             }
             showStatusMessage(message);
             console.log("Track list updated:", tracks);
