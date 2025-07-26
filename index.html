@@ -14,7 +14,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
     <link rel="shortcut icon" href="assets/favicon/favicon.ico">
-    <link rel="apple-touch-icon" href="assets/favicon/apple-touch-icon.png"> 
+    <link rel="apple-touch-icon" href="assets/favicon/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json" />
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
@@ -25,13 +25,12 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            /* Updated: Background image added. Ensure 'techno-background.jpg' is in 'assets/' */
-            background-image: url('assets/techno-background.jpg'); 
-            background-size: cover; /* Ensures the image covers the entire background */
-            background-position: center center; /* Centers the image */
-            background-repeat: no-repeat; /* Prevents the image from tiling */
-            background-attachment: fixed; /* Keeps the background static when scrolling (optional) */
-            background-color: #000; /* Fallback color if the image doesn't load */
+            background-image: url('assets/techno-background.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: #000;
             color: white;
             margin: 0;
             display: flex;
@@ -39,13 +38,12 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            overflow: hidden; /* Important for fixed background to prevent scrollbars */
+            overflow: hidden;
             text-align: center;
-            position: relative; /* Needed for the ::before pseudo-element overlay */
-            z-index: 1; /* Ensures body content is above the overlay */
+            position: relative;
+            z-index: 1;
         }
 
-        /* Optional: Add a semi-transparent black overlay for better text readability */
         body::before {
             content: '';
             position: absolute;
@@ -53,12 +51,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity as needed */
-            z-index: -1; /* Places the overlay behind the body's content */
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: -1;
         }
 
         h1 {
-            font-size: 0rem;
+            font-size: 0rem; /* Kept your original 0rem, adjust if you want it visible */
             margin-top: 20px;
         }
 
@@ -71,6 +69,11 @@
             display: flex;
             gap: 15px;
             margin: 20px 0;
+            width: 80%; /* Ensure controls can manage its children's positioning */
+            max-width: 600px; /* Example max-width for consistency */
+            justify-content: center; /* Center main buttons */
+            align-items: center; /* Align items vertically */
+            position: relative; /* Allow absolute positioning of children if needed */
         }
 
         .controls button {
@@ -85,6 +88,33 @@
 
         .controls button:hover {
             background: #666;
+        }
+
+        /* Style for the new icon button */
+        .icon-button {
+            background: none; /* Make background transparent */
+            border: 2px solid #666; /* Subtle border */
+            color: white; /* Icon color */
+            padding: 8px; /* Adjust padding */
+            border-radius: 50%; /* Make it circular */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s, border-color 0.3s;
+            width: 40px; /* Fixed width */
+            height: 40px; /* Fixed height */
+            margin-left: auto; /* Push it to the right */
+        }
+
+        .icon-button:hover {
+            background: #666;
+            border-color: #aaa;
+        }
+
+        .icon-button svg {
+            width: 20px; /* Icon size */
+            height: 20px;
         }
 
         .seek-bar-container {
@@ -124,7 +154,7 @@
         canvas {
             width: 100%;
             height: 60vh;
-            background: transparent; /* Keep this transparent so your body background shows */
+            background: transparent;
         }
 
         footer {
@@ -147,17 +177,44 @@
             0% { filter: hue-rotate(0deg); }
             100% { filter: hue-rotate(360deg); }
         }
+
+        /* For the status message */
+        .status-message {
+            position: fixed; /* Fixed position relative to viewport */
+            top: 20px; /* 20px from the top */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for true centering */
+            background-color: rgba(50, 50, 50, 0.9); /* Dark semi-transparent background */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0; /* Start hidden */
+            visibility: hidden; /* Start hidden */
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+            z-index: 1000; /* Ensure it's on top of other content */
+            font-size: 0.9rem;
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+
+        .status-message.show {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
 
     <h1>SRG774 &copy;</h1>
-    <h2 id="current-track">Now Playing:</h2>
+    <h2 id="current-track-display">Now Playing:</h2>
 
     <div class="controls">
         <button id="prev-button">Previous</button>
         <button id="play-pause-button">Play</button>
         <button id="next-button">Next</button>
+        <button id="refresh-tracks-button" class="icon-button" aria-label="Refresh Track List">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.5 9a9 9 0 0 1 16.5 0C21.78 11.23 23 13.62 23 16a9 9 0 0 1-18 0c0-2.38 1.22-4.77 3.5-7z"></path></svg>
+        </button>
     </div>
 
     <div class="seek-bar-container">
@@ -172,10 +229,15 @@
 
     <footer><p>SRG774 &copy;</p></footer>
 
+    <div id="status-message" class="status-message"></div>
+
 <script>
-    const tracks = [
+    // Define the initial set of tracks.
+    // When you want to "add a new track," you would manually update this array
+    // in your HTML file, then use the "Refresh Tracks" button on the page.
+    const initialTracksDefinition = [
         { title: "Caged", src: "assets/Cage.wav", isNew: true },
-        { title: "Stack", src: "assets/Perhaps1.wav", },
+        { title: "Stack", src: "assets/Perhaps1.wav" },
         { title: "Waves", src: "assets/waves.wav" },
         { title: "Pulse", src: "assets/Pulse_.wav" },
         { title: "98", src: "assets/'981.wav" },
@@ -184,14 +246,19 @@
         { title: "Highest", src: "assets/Throne21.wav" },
         { title: "Rise", src: "assets/Rise.wav" },
         { title: "Revos", src: "assets/revos (1) (1).wav" }
+        // Example of a new track you might add later:
+        // { title: "Dune", src: "assets/Dune.wav", isNew: true }
     ];
+
+    // The 'tracks' array that the player actively uses. It will be updated by refreshTrackList.
+    let tracks = [...initialTracksDefinition];
 
     let currentTrackIndex = Math.floor(Math.random() * tracks.length);
     let isPlaying = false;
     let hasUserInitiatedPlayback = false; // Flag to track if user has initiated playback at least once
 
     const audio = document.getElementById('audio');
-    const currentTrack = document.getElementById('current-track');
+    const currentTrackDisplay = document.getElementById('current-track-display'); // Renamed for clarity
     const playPauseButton = document.getElementById('play-pause-button');
     const prevButton = document.getElementById('prev-button');
     const nextButton = document.getElementById('next-button');
@@ -200,6 +267,10 @@
     const seekBarThumb = document.getElementById('seek-bar-thumb');
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
+
+    // New element references for the refresh feature
+    const refreshTracksButton = document.getElementById('refresh-tracks-button');
+    const statusMessageDiv = document.getElementById('status-message');
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
@@ -247,11 +318,20 @@
      * @param {boolean} shouldAutoPlay - Whether the track should attempt to auto-play.
      */
     function loadTrack(index, shouldAutoPlay = false) {
-        const track = tracks[index];
+        // Ensure index is within bounds of the potentially new 'tracks' array length
+        if (index >= tracks.length || index < 0) {
+            index = 0; // Default to first track if out of bounds
+            currentTrackIndex = 0;
+        } else {
+            currentTrackIndex = index; // Update the global index
+        }
+
+
+        const track = tracks[currentTrackIndex]; // Use currentTrackIndex here
         audio.src = track.src;
 
         const newTag = track.isNew ? `<span class="rainbow-new">NEW</span>` : '';
-        currentTrack.innerHTML = `Now Playing: ${track.title} ${newTag}`;
+        currentTrackDisplay.innerHTML = `Now Playing: ${track.title} ${newTag}`; // Use currentTrackDisplay
         updateMediaSession();
 
         if (shouldAutoPlay && hasUserInitiatedPlayback) {
@@ -290,7 +370,7 @@
                 // If play fails (e.g., no user gesture), reset state
                 isPlaying = false;
                 playPauseButton.textContent = 'Play';
-                hasUserInitiatedPlayback = false; // Keep flag false if play fails
+                // hasUserInitiatedPlayback remains false if play fails here
             });
         } else {
             audio.pause();
@@ -422,11 +502,82 @@
         }
     }
 
+    // --- NEW FUNCTIONS FOR TRACK REFRESH ---
+
+    // Function to display temporary status messages
+    function showStatusMessage(message, duration = 3000) {
+        statusMessageDiv.textContent = message;
+        statusMessageDiv.classList.add('show');
+        setTimeout(() => {
+            statusMessageDiv.classList.remove('show');
+        }, duration);
+    }
+
+    /**
+     * Compares two track lists for differences.
+     * @param {Array<Object>} oldList - The existing list of tracks.
+     * @param {Array<Object>} newList - The new list of tracks.
+     * @returns {boolean} True if lists are different (length, or title/src mismatch), false otherwise.
+     */
+    function haveTracksChanged(oldList, newList) {
+        if (oldList.length !== newList.length) {
+            return true; // Different number of tracks
+        }
+        for (let i = 0; i < oldList.length; i++) {
+            // Simple comparison of title and source for changes
+            if (oldList[i].title !== newList[i].title || oldList[i].src !== newList[i].src) {
+                return true; // Track details changed
+            }
+        }
+        return false; // No changes detected
+    }
+
+    // Function to refresh the track list from the hardcoded 'initialTracksDefinition'
+    function refreshTrackList() {
+        // We compare against `initialTracksDefinition` because that represents the
+        // "source of truth" as defined in the HTML file for this client-side example.
+        // In a real application with a backend, `newTracks` would come from an API call.
+        const newTracks = [...initialTracksDefinition]; // Create a fresh copy to compare
+
+        // Check if the current 'tracks' array is different from the 'newTracks'
+        if (haveTracksChanged(tracks, newTracks)) {
+            const oldLength = tracks.length;
+            tracks = newTracks; // Update the active tracks array
+
+            // Determine if new tracks were added or removed
+            let message = "";
+            if (tracks.length > oldLength) {
+                message = "New tracks added!";
+            } else if (tracks.length < oldLength) {
+                message = "Tracks removed.";
+            } else {
+                message = "Track list updated!"; // Could be metadata changes etc.
+            }
+            showStatusMessage(message);
+            console.log("Track list updated:", tracks);
+
+            // Re-evaluate current track index in case it's out of bounds with new list
+            // or if we want to reset to the first track after an update.
+            if (currentTrackIndex >= tracks.length) {
+                currentTrackIndex = 0; // Reset to start if current index is invalid
+            }
+            loadTrack(currentTrackIndex, false); // Load current/first track, but don't auto-play
+                                                 // just in case user didn't initiate playback yet.
+        } else {
+            showStatusMessage("No changes to track list.");
+            console.log("No changes in track list detected.");
+        }
+    }
+
+    // --- INITIALIZATION & EVENT LISTENERS ---
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
+    // Add event listener for the new refresh button
+    refreshTracksButton.addEventListener('click', refreshTrackList);
+
     // Initial load: Load the first track, but DO NOT auto-play.
-    // The player will be in a "Play" ready state, allowing silent track Browse.
+    // The player will be in a "Play" ready state, allowing silent track browse.
     loadTrack(currentTrackIndex, false);
 </script>
 <script src="register-sw.js"></script>
