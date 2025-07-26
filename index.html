@@ -150,8 +150,22 @@
             /* No border-radius override here, keep 50% for circular shape */
         }
 
+        /* --- NEW RULE FOR PLAY/PAUSE BUTTON SIZE --- */
+        #play-pause-button {
+            width: 60px;  /* 20% larger than 50px */
+            height: 60px; /* 20% larger than 50px */
+        }
+
+        /* Adjust the SVG inside the larger play/pause button */
+        #play-pause-button svg {
+            width: 30px; /* Adjust SVG size for the larger button, approximately 20% larger than 24px */
+            height: 30px;
+        }
+        /* ------------------------------------------- */
+
+
         .controls .icon-button svg {
-            width: 24px; /* Larger icons for main controls */
+            width: 24px; /* Larger icons for main controls (prev/next) */
             height: 24px;
         }
 
@@ -160,6 +174,7 @@
         /* .icon-button:hover is now handled by .controls button:hover */
 
 
+        /* Base icon button SVG size (e.g. for the refresh button) */
         .icon-button svg {
             width: 20px;
             height: 20px;
@@ -227,7 +242,7 @@
             bottom: 20px; /* Distance from bottom of footer */
             right: 20px; /* Distance from right of footer */
             margin: 0; /* Override any other margins */
-            
+
             /* Ensure it's circular and sized appropriately */
             border-radius: 50%;
             width: 40px;
