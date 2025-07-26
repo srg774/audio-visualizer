@@ -107,48 +107,47 @@
             position: relative; /* Needed for positioning elements within it */
         }
 
-        /* UPDATED: General styling for buttons within .controls - remove text-like properties */
+        /* Removed border and adjusted background for general control buttons */
         .controls button {
-            background: none; /* Make background transparent by default for all buttons here */
-            border: none; /* Remove default button border */
+            background: none; /* Make background transparent by default */
+            border: none; /* Remove border entirely for these buttons */
             color: white;
-            border-radius: 5px;
+            border-radius: 50%; /* Make them circular */
             cursor: pointer;
             transition: background 0.3s;
-            display: flex; /* Make buttons flex containers for SVG icons */
+            display: flex;
             justify-content: center;
             align-items: center;
-            /* Removed or overridden by .icon-button: */
-            /* padding: 10px 20px; */
+            width: 50px; /* Set a fixed size for consistent circles */
+            height: 50px;
+            padding: 0; /* Remove padding as content is sized by SVG */
         }
 
         .controls button:hover {
-            background: #666; /* Keep hover effect for interaction feedback */
+            background: rgba(255, 255, 255, 0.2); /* Subtle white circular highlight on hover */
         }
 
-        /* Style for all icon buttons (including the refresh button) */
+        /* The .icon-button class becomes primarily for sizing and centering SVGs */
         .icon-button {
-            background: none; /* Ensures icons are on a transparent background */
-            border: 2px solid #666;
+            background: none;
+            border: none; /* Ensure no border */
             color: white;
-            padding: 8px; /* Default padding for smaller icon buttons */
-            border-radius: 50%;
+            padding: 0; /* Ensure no padding affecting size */
+            border-radius: 50%; /* Default to circular for all icon buttons */
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: background 0.3s, border-color 0.3s;
-            width: 40px;
+            transition: background 0.3s; /* Only transition background */
+            width: 40px; /* Default size for smaller icon buttons like refresh */
             height: 40px;
         }
 
-        /* Adjustments for the main control buttons (play/pause, next, prev) */
+        /* Specific sizing for the main control icons (prev, play/pause, next) */
         .controls .icon-button {
-            border-radius: 5px; /* Square corners for play/pause/next/prev buttons */
-            width: 50px; /* Slightly wider to accommodate icons */
-            height: 50px; /* Slightly taller */
-            padding: 10px; /* Adjust padding for visual balance for these larger icons */
-            border: 2px solid #666; /* Ensure they have a border */
+            width: 50px; /* Larger circular area for these */
+            height: 50px;
+            /* No border-radius override here, keep 50% for circular shape */
         }
 
         .controls .icon-button svg {
@@ -157,10 +156,9 @@
         }
 
 
-        .icon-button:hover {
-            background: #666;
-            border-color: #aaa;
-        }
+        /* No hover specific to .icon-button, inherited from .controls button:hover */
+        /* .icon-button:hover is now handled by .controls button:hover */
+
 
         .icon-button svg {
             width: 20px;
@@ -229,11 +227,17 @@
             bottom: 20px; /* Distance from bottom of footer */
             right: 20px; /* Distance from right of footer */
             margin: 0; /* Override any other margins */
-            /* Ensure it's circular */
+            
+            /* Ensure it's circular and sized appropriately */
             border-radius: 50%;
-            width: 40px; /* Default icon button size */
-            height: 40px; /* Default icon button size */
-            padding: 8px; /* Default icon button padding */
+            width: 40px;
+            height: 40px;
+            padding: 0; /* No padding, icon sizes it */
+        }
+
+        /* Refresh button specific hover effect */
+        .icon-button.bottom-right:hover {
+            background: rgba(255, 255, 255, 0.2); /* Same circular highlight */
         }
 
         /* Rainbow "NEW" tag styling */
