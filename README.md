@@ -21,7 +21,7 @@ Open index.html in your browser.
 Enjoy listening to your favorite tracks with dynamic visual effects!
 
 **New**
-We've streamlined the interface by replacing the simple "Now Playing" text with the track title itself, now enhanced with a subtle, engaging shimmer effect when your music is playing. All the traditional text buttons for play, pause, next, and previous tracks have been swapped out for sleek, intuitive icons, offering a much cleaner and more modern look, and we even made the play/pause button slightly larger to stand out. To keep your music library always up-to-date, we've introduced a clever track check and refresh button, so any new additions are seamlessly integrated, all while maintaining the cool visualizer and smooth seek bar experience you already enjoy.
+I've streamlined the interface by replacing the simple "Now Playing" text with the track title itself, now enhanced with a subtle, engaging shimmer effect when your music is playing. All the traditional text buttons for play, pause, next, and previous tracks have been swapped out for sleek, intuitive icons, offering a much cleaner and more modern look, and we even made the play/pause button slightly larger to stand out. To keep your music library always up-to-date, we've introduced a clever track check and refresh button, so any new additions are seamlessly integrated, all while maintaining the cool visualizer and smooth seek bar experience you already enjoy.
 
 This music player now supports full offline playback thanks to a Service Worker.
 Now includes the latest tracks, marked with 'NEW'. Improved compression and audio enhancements applied. Fixed pause/play logic for a more intuitive experience.
