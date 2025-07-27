@@ -25,7 +25,6 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            /* Ensure this image path is correct relative to your HTML file */
             background-image: url('assets/techno-background.jpg');
             background-size: cover;
             background-position: center center;
@@ -349,35 +348,16 @@
     <div id="status-message" class="status-message"></div>
 
 <script>
-    // Define the initial set of tracks.
-    // When you want to "add a new track," you would manually update this array
-    // in your HTML file, then use the "Refresh Tracks" button on the page.
-    const initialTracksDefinition = [
-        { title: "Chant", src: "assets/Chant.wav", isNew: true }, // Marked as new
-        { title: "Stack", src: "assets/Perhaps1.wav" },
-        { title: "Waves", src: "assets/waves.wav" },
-        { title: "Caged", src: "assets/Cage.wav" },
-        { title: "98", src: "assets/'981.wav" },
-        { title: "Synthétique", src: "assets/nuhouse21.mp3" },
-        { title: "Tin Hat", src: "assets/Tin Hat1.wav" },
-        { title: "Highest", src: "assets/Throne21.wav" },
-        { title: "Rise", src: "assets/Rise.wav" },
-        { title: "Revos", src: "assets/revos (1) (1).wav" }
-        // Example of a new track you might add later for testing:
-        // { title: "New Test Track", src: "assets/your-new-track.wav", isNew: true }
-        // Remember to actually place 'your-new-track.wav' in your 'assets/' folder
-    ];
+    // The 'tracks' array that the player actively uses. It will be populated by refreshTrackList.
+    let tracks = []; // Start with an empty array
 
-    // The 'tracks' array that the player actively uses. It will be updated by refreshTrackList.
-    let tracks = [...initialTracksDefinition];
-
-    let currentTrackIndex = Math.floor(Math.random() * tracks.length);
+    let currentTrackIndex = 0; // Will be set to a random track after initial load
     let isPlaying = false;
     let hasUserInitiatedPlayback = false; // Flag to track if user has initiated playback at least once
 
     // Get references to HTML elements
     const audio = document.getElementById('audio');
-    const currentTrackDisplay = document.getElementById('current-track-display'); // Renamed for clarity
+    const currentTrackDisplay = document.getElementById('current-track-display');
     const playPauseButton = document.getElementById('play-pause-button');
     const prevButton = document.getElementById('prev-button');
     const nextButton = document.getElementById('next-button');
@@ -411,7 +391,7 @@
                     analyser.connect(audioContext.destination); // Analyser connects to speakers
                     audioSourceConnected = true;
                 }
-            });
+            }).catch(e => console.error("Error resuming AudioContext:", e));
         } else {
             if (!audioSourceConnected) {
                 source = audioContext.createMediaElementSource(audio);
@@ -439,25 +419,19 @@
      * @param {boolean} isActive - True to activate shimmer, false to deactivate.
      */
     function setShimmerState(isActive) {
-        // Find the text content to be shimmered, excluding the "NEW" tag
-        let trackTitleText = tracks[currentTrackIndex]?.title || ""; // Get current track title
-        let actualDisplayContent = trackTitleText;
-
-        // Ensure currentTrackDisplay is cleared before re-populating to prevent duplicates
-        currentTrackDisplay.innerHTML = '';
+        let trackTitleText = tracks[currentTrackIndex]?.title || "";
+        currentTrackDisplay.innerHTML = ''; // Clear content first
 
         if (isActive) {
-            // Apply shimmer to the title part
             currentTrackDisplay.innerHTML = `<span class="shimmer-effect">${trackTitleText}</span>`;
             if (tracks[currentTrackIndex]?.isNew) {
                 currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
             }
             currentTrackDisplay.classList.add('shimmer-active');
         } else {
-            // Simply display the title and "NEW" tag if applicable
-            currentTrackDisplay.textContent = trackTitleText; // Set text content first
+            currentTrackDisplay.textContent = trackTitleText;
             if (tracks[currentTrackIndex]?.isNew) {
-                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`; // Append rainbow tag
+                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
             }
             currentTrackDisplay.classList.remove('shimmer-active');
         }
@@ -476,26 +450,28 @@
         </svg>
     `;
 
-
     /**
      * Loads a track and optionally attempts to auto-play it.
      * @param {number} index - The index of the track to load.
      * @param {boolean} shouldAutoPlay - Whether the track should attempt to auto-play.
      */
     function loadTrack(index, shouldAutoPlay = false) {
-        // Ensure index is within bounds of the potentially new 'tracks' array length
+        if (tracks.length === 0) {
+            console.warn("No tracks available to load.");
+            currentTrackDisplay.textContent = "No tracks loaded.";
+            playPauseButton.innerHTML = playIconSVG;
+            return;
+        }
+
+        // Ensure index is within bounds of the tracks array length
         if (index >= tracks.length || index < 0) {
             index = 0; // Default to first track if out of bounds
-            currentTrackIndex = 0;
-        } else {
-            currentTrackIndex = index; // Update the global index
         }
+        currentTrackIndex = index; // Update the global index
 
         const track = tracks[currentTrackIndex];
         audio.src = track.src; // Set the audio source
 
-        // Update track title display and shimmer state
-        // This function call handles setting the "NEW" tag correctly now.
         setShimmerState(false); // Always set initial state to false (no shimmer) on load
 
         updateMediaSession(); // Update browser's media session info
@@ -506,7 +482,6 @@
                 isPlaying = true;
                 playPauseButton.innerHTML = pauseIconSVG; // Set to pause icon
                 drawVisualizer(); // Start visualizer
-                // hasUserInitiatedPlayback = true; // This flag should ideally be set only on the very first user interaction
                 setShimmerState(true); // Start shimmer
                 trackPlayed(track.title); // Track play only on successful play
             }).catch(error => {
@@ -528,19 +503,6 @@
 
     // Toggle Play/Pause functionality
     function togglePlayback() {
-        // If audioContext is suspended (e.g., initially or after some time), resume it on user gesture
-        if (audioContext.state === 'suspended' || audioContext.state === 'interrupted') {
-             audioContext.resume().then(() => {
-                console.log('AudioContext resumed from togglePlayback!');
-                // Continue with play/pause logic after successful resume
-                performPlaybackToggle();
-            }).catch(e => console.error("Error resuming AudioContext:", e));
-        } else {
-            performPlaybackToggle();
-        }
-    }
-
-    function performPlaybackToggle() {
         if (!audioSourceConnected) {
             ensureAudioContextAndSource(); // Connect nodes if not already connected
         }
@@ -567,7 +529,6 @@
         }
     }
 
-
     // Event listeners for player controls
     playPauseButton.addEventListener('click', togglePlayback);
 
@@ -583,32 +544,27 @@
 
     // Seek Bar Logic: Listen for metadata to ensure duration is known, then update time
     audio.addEventListener('loadedmetadata', () => {
-        // This event ensures audio.duration is available before we try to use it for calculations.
         if (!isNaN(audio.duration)) {
-            // Initialize seek bar to 0% when a new track's metadata is loaded
             seekBarProgress.style.width = '0%';
-            const thumbPos = 0; // Thumb should be at the very start
+            const thumbPos = 0;
             seekBarThumb.style.left = `${thumbPos}px`;
         }
     });
 
     audio.addEventListener('timeupdate', () => {
-        if (!isNaN(audio.duration)) { // Still good to check here just in case, or during initial loading phase
+        if (!isNaN(audio.duration)) {
             const progress = (audio.currentTime / audio.duration) * 100;
             seekBarProgress.style.width = `${progress}%`;
-            // Calculate thumb position relative to the seek bar's width
             const thumbWidth = seekBarThumb.offsetWidth;
             const seekBarWidth = seekBar.offsetWidth;
             const thumbPos = (progress / 100) * seekBarWidth;
-            // Adjust thumb position to account for its own width so it doesn't go off the end
-            // Center the thumb on the current progress point
             const adjustedThumbPos = Math.max(0, Math.min(seekBarWidth - thumbWidth / 2, thumbPos - (thumbWidth / 2)));
             seekBarThumb.style.left = `${adjustedThumbPos}px`;
         }
     });
 
     seekBar.addEventListener('click', (e) => {
-        if (isNaN(audio.duration)) return; // Prevent seeking if duration is not known yet
+        if (isNaN(audio.duration)) return;
 
         const rect = seekBar.getBoundingClientRect();
         const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
@@ -632,7 +588,7 @@
 
             for (let i = 0; i < bufferLength; i++) {
                 const angle = (i / bufferLength) * 2 * Math.PI;
-                const barHeight = (dataArray[i] / 255) * radius * 0.8; // Reduced height for more controlled visualization
+                const barHeight = (dataArray[i] / 255) * radius * 0.8;
                 const x1 = centerX + Math.cos(angle) * radius;
                 const y1 = centerY + Math.sin(angle) * radius;
                 const x2 = centerX + Math.cos(angle) * (radius + barHeight);
@@ -693,7 +649,6 @@
     function showStatusMessage(message, duration = 3000) {
         statusMessageDiv.textContent = message;
         statusMessageDiv.classList.add('show');
-        // Clear any existing timeout to prevent quick flashes or overridden messages
         if (statusMessageDiv.timeoutId) {
             clearTimeout(statusMessageDiv.timeoutId);
         }
@@ -725,49 +680,71 @@
         return false; // No changes detected
     }
 
-    // Function to refresh the track list from the hardcoded 'initialTracksDefinition'
-    function refreshTrackList() {
-        // Create a deep copy to ensure proper comparison
-        const newTracks = JSON.parse(JSON.stringify(initialTracksDefinition));
+    // Function to refresh the track list from the external 'tracks.json' file
+    async function refreshTrackList() {
+        showStatusMessage("Checking for new tracks...", 1500); // Give immediate feedback
+        try {
+            // Fetch tracks.json from the network (service worker will handle caching/freshness)
+            const response = await fetch('tracks.json');
+            if (!response.ok) {
+                throw new Error(`Failed to fetch track list: ${response.status} ${response.statusText}`);
+            }
+            const newTracks = await response.json();
 
-        if (haveTracksChanged(tracks, newTracks)) {
-            const oldLength = tracks.length;
-            tracks = newTracks; // Update the active tracks array
+            if (haveTracksChanged(tracks, newTracks)) {
+                const oldLength = tracks.length;
+                tracks = newTracks; // Update the active tracks array
 
-            let message = "";
-            if (tracks.length > oldLength) {
-                message = "New tracks added!";
-            } else if (tracks.length < oldLength) {
-                message = "Tracks removed.";
+                let message = "";
+                if (tracks.length > oldLength) {
+                    message = "New tracks added!";
+                } else if (tracks.length < oldLength) {
+                    message = "Tracks removed.";
+                } else {
+                    message = "Track list updated!"; // For metadata changes etc.
+                }
+                showStatusMessage(message, 3000);
+
+                // If the currently playing track's index is now out of bounds
+                // or the track itself has changed, load the (possibly new) current track.
+                if (currentTrackIndex >= tracks.length || (tracks.length > 0 && tracks[currentTrackIndex]?.src !== audio.src)) {
+                    currentTrackIndex = 0; // Reset to first track if the list changed significantly
+                }
+                loadTrack(currentTrackIndex, isPlaying); // Attempt to continue playing
             } else {
-                // Could be metadata changes etc.
-                message = "Track list updated!";
+                showStatusMessage("Track list is already up-to-date.", 2000);
             }
-            showStatusMessage(message);
-            console.log("Track list updated:", tracks);
-
-            // Re-evaluate current track index in case it's out of bounds with new list
-            if (currentTrackIndex >= tracks.length || currentTrackIndex < 0) {
-                currentTrackIndex = 0; // Reset to start if current index is invalid
-            }
-            loadTrack(currentTrackIndex, false); // Load current/first track, but don't auto-play
-        } else {
-            showStatusMessage("No changes to track list.");
-            console.log("No changes in track list detected.");
+        } catch (error) {
+            console.error("Error refreshing track list:", error);
+            showStatusMessage("Failed to refresh tracks. Check your connection.", 3000);
         }
     }
 
-    // --- INITIALIZATION & MAIN EVENT LISTENERS ---
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas(); // Initial canvas resize
-
-    // Add event listener for the new refresh button
+    // Event listener for the refresh button
     refreshTracksButton.addEventListener('click', refreshTrackList);
 
-    // Initial load: Load the first track, but DO NOT auto-play.
-    // The player will be in a "Play" ready state, allowing silent track browse.
-    loadTrack(currentTrackIndex, false); // Load with play icon initially
+
+    // Initial setup when the page loads
+    window.addEventListener('load', () => {
+        resizeCanvas();
+        // Load tracks initially from tracks.json
+        refreshTrackList().then(() => {
+            // After tracks are loaded, initialize audio and display
+            if (tracks.length > 0) {
+                // Set initial track to a random one from the loaded list
+                currentTrackIndex = Math.floor(Math.random() * tracks.length);
+                loadTrack(currentTrackIndex, false); // Do not auto-play on initial load
+            } else {
+                showStatusMessage("No music tracks found! Please add them to tracks.json.", 5000);
+            }
+        }).catch(error => {
+            console.error("Initial track loading failed:", error);
+            showStatusMessage("Failed to load tracks initially. Try refreshing.", 5000);
+        });
+    });
+
+    window.addEventListener('resize', resizeCanvas);
 </script>
-<script src="register-sw.js"></script>
+
 </body>
 </html>
