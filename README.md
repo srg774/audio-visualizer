@@ -40,14 +40,6 @@ Here are the most recent improvements I've made to the player:
 
 ---
 
-## Setup
-
-1.  Clone this repository.
-2.  Open `index.html` in your browser.
-3.  Enjoy listening to your favorite tracks with dynamic visual effects!
-
----
-
 ## New Track Insert Format
 
 To add new tracks, use the following format:
