@@ -9,6 +9,4 @@
     { "title": "Highest", "src": "assets/Throne21.wav" },
     { "title": "Rise", "src": "assets/Rise.wav" },
     { "title": "Revos", "src": "assets/revos (1) (1).wav" }
-    // Add new tracks here in the future:
-    // { "title": "My New Track", "src": "assets/my-new-track.wav", "isNew": true }
 ]
