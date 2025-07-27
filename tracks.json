@@ -1,0 +1,14 @@
+[
+    { "title": "Chant", "src": "assets/Chant.wav", "isNew": true },
+    { "title": "Stack", "src": "assets/Perhaps1.wav" },
+    { "title": "Waves", "src": "assets/waves.wav" },
+    { "title": "Caged", "src": "assets/Cage.wav" },
+    { "title": "98", "src": "assets/%27981.wav" },
+    { "title": "Synthétique", "src": "assets/nuhouse21.mp3" },
+    { "title": "Tin Hat", "src": "assets/Tin Hat1.wav" },
+    { "title": "Highest", "src": "assets/Throne21.wav" },
+    { "title": "Rise", "src": "assets/Rise.wav" },
+    { "title": "Revos", "src": "assets/revos (1) (1).wav" }
+    // Add new tracks here in the future:
+    // { "title": "My New Track", "src": "assets/my-new-track.wav", "isNew": true }
+]
