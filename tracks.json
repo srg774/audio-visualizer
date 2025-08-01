@@ -1,7 +1,7 @@
 [
-    { "title": "Caged", "src": "assets/Cage.wav", "isNew": true },
+    { "title": "Interlude", "src": "assets/Interlude1.wav", "isNew": true },
     { "title": "Stack", "src": "assets/Perhaps1.wav" },
-    { "title": "Waves", "src": "assets/waves.wav" },
+    { "title": "Caged", "src": "assets/Cage.wav" },
     { "title": "98", "src": "assets/%27981.wav" },
     { "title": "Synthétique", "src": "assets/nuhouse21.mp3" },
     { "title": "Tin Hat", "src": "assets/Tin Hat1.wav" },
