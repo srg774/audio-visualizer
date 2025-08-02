@@ -8,7 +8,6 @@ const staticAssets = [
     '/', // Cache the root URL (index.html)
     'index.html',
     'manifest.json',
-    'style.css',
     'register-sw.js',
     'assets/android-chrome-512x512.png',
     // 'assets/techno-background.jpg', // Removed this as you no longer need it.
