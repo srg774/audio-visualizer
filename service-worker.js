@@ -1,9 +1,9 @@
-const CACHE_VERSION = 'v3'; // <--- IMPORTANT: Increment the version number!
+const CACHE_VERSION = 'v4'; // <--- IMPORTANT: Increment the version number!
 const ASSET_CACHE_NAME = `srg774-music-assets-${CACHE_VERSION}`;
 const AUDIO_CACHE_NAME = `srg774-music-audio-${CACHE_VERSION}`;
 
 // List of static assets to cache on install.
-// IMPORTANT: Do NOT include tracks.json here, as it is dynamic and should be fetched fresh.
+// The tracks.json file is intentionally left out to always fetch fresh.
 const staticAssets = [
     '/', // Cache the root URL (index.html)
     'index.html',
@@ -14,28 +14,18 @@ const staticAssets = [
     // Add any other static assets like additional favicon images or fonts here
 ];
 
-// This list is now just for fetch matching, not pre-caching
-const musicTracks = [
-    'assets/Cage.wav',
-    'assets/Perhaps1.wav',
-    'assets/nuhouse21.mp3',
-    'assets/Throne21.wav'
-];
-
-
 // Install event: Caches specified static assets
 self.addEventListener('install', event => {
     console.log('Service Worker: Installing...');
     event.waitUntil(
         caches.open(ASSET_CACHE_NAME).then(cache => {
             console.log('Service Worker: Caching essential assets during install');
-            // Cache the static assets, excluding the dynamic tracks.json
             return cache.addAll(staticAssets).catch(error => {
                 console.error('Service Worker: Failed to add some static assets to cache:', error);
             });
         }).then(() => {
             console.log('Service Worker: Installation complete. New version ready.');
-            return self.skipWaiting(); // Force the new service worker to activate immediately
+            return self.skipWaiting();
         }).catch(error => {
             console.error('Service Worker: Installation failed:', error);
         })
@@ -49,7 +39,6 @@ self.addEventListener('activate', event => {
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
-                    // Delete old caches that don't match the current names
                     if (cacheName !== ASSET_CACHE_NAME && cacheName !== AUDIO_CACHE_NAME) {
                         console.log('Service Worker: Deleting old cache', cacheName);
                         return caches.delete(cacheName);
@@ -58,28 +47,31 @@ self.addEventListener('activate', event => {
             );
         }).then(() => {
             console.log('Service Worker: Activation complete. Taking control of clients.');
-            return self.clients.claim(); // Take control of un-controlled clients
+            return self.clients.claim();
         })
     );
 });
 
 // Fetch event: Intercepts network requests and serves from cache or network
 self.addEventListener('fetch', event => {
-    // Only handle HTTP/HTTPS requests
     if (!event.request.url.startsWith('http')) {
         return;
     }
 
     const requestUrl = new URL(event.request.url);
+    const pathname = requestUrl.pathname;
 
-    // Strategy for 'critical' assets (HTML, main CSS, SW registration, manifest, tracks.json): Network First, then Cache
-    // This ensures these files are always fresh if the network is available.
-    if (requestUrl.pathname === '/' ||
-        requestUrl.pathname === '/index.html' ||
-        requestUrl.pathname === '/style.css' ||
-        requestUrl.pathname === '/register-sw.js' ||
-        requestUrl.pathname === '/tracks.json' || // The Network First strategy is now the ONLY rule for tracks.json
-        requestUrl.pathname.includes('manifest.json')
+    // A list of file extensions that indicate an audio file.
+    const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a'];
+    const isAudioRequest = audioExtensions.some(ext => pathname.endsWith(ext));
+
+    // Strategy for 'critical' assets (Network First, then Cache)
+    if (pathname === '/' ||
+        pathname === '/index.html' ||
+        pathname === '/style.css' ||
+        pathname === '/register-sw.js' ||
+        pathname === '/tracks.json' ||
+        pathname.includes('manifest.json')
     ) {
         event.respondWith(
             fetch(event.request)
@@ -88,7 +80,6 @@ self.addEventListener('fetch', event => {
                         const responseToCache = networkResponse.clone();
                         caches.open(ASSET_CACHE_NAME).then(cache => {
                             cache.put(event.request, responseToCache);
-                            // console.log('Service Worker: Updated critical asset in cache:', event.request.url);
                         });
                     }
                     return networkResponse;
@@ -101,41 +92,36 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // Strategy for other static assets and audio files: Cache First, then Network
+    // New logic for audio and other assets: Cache First, then Network, then cache new items.
     event.respondWith(
         caches.match(event.request).then(response => {
+            // Found in cache, return it immediately
             if (response) {
-                // console.log('Service Worker: Serving from cache', event.request.url);
                 return response;
             }
 
+            // Not in cache, so go to the network
             return fetch(event.request).then(networkResponse => {
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                     return networkResponse;
                 }
 
-                const responseToCache = networkResponse.clone();
-
-                const isAudioRequest = musicTracks.some(trackPath => event.request.url.endsWith(trackPath));
-                const isAssetRequest = staticAssets.some(assetPath => event.request.url.endsWith(assetPath) || event.request.url === new URL(assetPath, self.location).href);
-
+                // If it's a new audio track, cache it in the audio cache
                 if (isAudioRequest) {
-                    caches.open(AUDIO_CACHE_NAME)
-                        .then(cache => {
-                            cache.put(event.request, responseToCache);
-                            // console.log('Service Worker: Cached new audio track', event.request.url);
-                        });
-                } else if (isAssetRequest) {
-                    caches.open(ASSET_CACHE_NAME)
-                        .then(cache => {
-                            cache.put(event.request, responseToCache);
-                            // console.log('Service Worker: Cached new static asset', event.request.url);
-                        });
+                    const responseToCache = networkResponse.clone();
+                    caches.open(AUDIO_CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseToCache);
+                        console.log('Service Worker: Dynamically cached new audio track', event.request.url);
+                    });
                 }
+                
+                // For other non-critical assets not in the initial list, you could cache them here too,
+                // but the current logic handles static assets on install and dynamic assets (like audio) on first fetch.
 
                 return networkResponse;
             }).catch(error => {
                 console.error('Service Worker: Fetch failed for', event.request.url, error);
+                // The offline response for navigation requests is a nice touch, let's keep that.
                 if (event.request.mode === 'navigate') {
                     return new Response('<h1>Offline</h1><p>It looks like you are offline and this content is not cached.</p>', {
                         headers: { 'Content-Type': 'text/html' }
