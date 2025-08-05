@@ -724,23 +724,30 @@
 
 
     // Initial setup when the page loads
-    window.addEventListener('load', () => {
-        resizeCanvas();
-        // Load tracks initially from tracks.json
-        refreshTrackList().then(() => {
-            // After tracks are loaded, initialize audio and display
-            if (tracks.length > 0) {
-                // Set initial track to a random one from the loaded list
-                currentTrackIndex = Math.floor(Math.random() * tracks.length);
-                loadTrack(currentTrackIndex, false); // Do not auto-play on initial load
+window.addEventListener('load', () => {
+    resizeCanvas();
+    // Load tracks initially from tracks.json
+    refreshTrackList().then(() => {
+        if (tracks.length > 0) {
+            // Find the index of the first track marked as 'isNew'
+            const newTrackIndex = tracks.findIndex(track => track.isNew);
+            
+            // If an 'isNew' track is found, use its index. Otherwise, default to the first track.
+            if (newTrackIndex !== -1) {
+                currentTrackIndex = newTrackIndex;
             } else {
-                showStatusMessage("No music tracks found! Please add them to tracks.json.", 5000);
+                currentTrackIndex = 0;
             }
-        }).catch(error => {
-            console.error("Initial track loading failed:", error);
-            showStatusMessage("Failed to load tracks initially. Try refreshing.", 5000);
-        });
+            
+            loadTrack(currentTrackIndex, false); // Do not auto-play on initial load
+        } else {
+            showStatusMessage("No music tracks found! Please add them to tracks.json.", 5000);
+        }
+    }).catch(error => {
+        console.error("Initial track loading failed:", error);
+        showStatusMessage("Failed to load tracks initially. Try refreshing.", 5000);
     });
+});
 
     window.addEventListener('resize', resizeCanvas);
 </script>
