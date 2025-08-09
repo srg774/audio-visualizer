@@ -1,6 +1,6 @@
 [
-    { "title": "Michael", "src": "assets/Michael3.wav", "isNew": true },
-    { "title": "Cage", "src": "assets/Cage.wav" },
+    { "title": "Vector", "src": "assets/Vector2.wav", "isNew": true },
+    { "title": "Michael", "src": "assets/Michael3.wav" },
     { "title": "Synthétique", "src": "assets/nuhouse21.mp3" },
     { "title": "Highest", "src": "assets/Throne21.wav" }
 ]
