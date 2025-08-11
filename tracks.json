@@ -1,5 +1,6 @@
 [
-    { "title": "Arbeit", "src": "assets/metals63.wav", "isNew": true },
+    { "title": "Dream", "src": "assets/Dream.wav", "isNew": true },
+    { "title": "Arbeit", "src": "assets/metals63.wav" },
     { "title": "Michael", "src": "assets/Michael3.wav" },
     { "title": "Synthétique", "src": "assets/nuhouse21.mp3" },
     { "title": "Highest", "src": "assets/Throne21.wav" }
