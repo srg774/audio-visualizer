@@ -1,6 +1,6 @@
 [
     { "title": "Dream", "src": "assets/Dream.wav", "isNew": true },
-    { "title": "Steps", "src": "assets/FW2.wav" },
+    { "title": "Steps", "src": "assets/FW2.mp3" },
     { "title": "Michael", "src": "assets/Michael3.wav" },
     { "title": "Synthétique", "src": "assets/nuhouse21.mp3" },
     { "title": "Highest", "src": "assets/Throne21.wav" }
