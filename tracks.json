@@ -1,6 +1,6 @@
 [
-    { "title": "Stable", "src": "assets/STABLE19.wav", "isNew": true },
-    { "title": "Dream", "src": "assets/Dream2.wav" },
+    { "title": "Dream", "src": "assets/Dream2.wav", "isNew": true },
     { "title": "Michael", "src": "assets/Michael2.wav" },
-    { "title": "Synthétique", "src": "assets/nuhouse21.mp3" }
+    { "title": "Synthétique", "src": "assets/nuhouse21.mp3" },
+    { "title": "Stable", "src": "assets/STABLElast.wav" }
 ]
