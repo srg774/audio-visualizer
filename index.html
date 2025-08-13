@@ -66,38 +66,27 @@
             /* Shimmer effect container styles */
             position: relative;
             display: inline-block; /* Shrink to content width */
-            /* overflow: hidden; */ /* Hide the shimmer when it's outside the text area */
+            overflow: hidden; /* Restore this for the new shimmer effect */
             padding: 5px 0; /* Give some vertical padding for the shimmer to fully pass */
         }
 
-        /*
-        // --- Shimmer effect CSS is commented out below ---
-        
-        // h2 .shimmer-effect::before {
-        //     content: '';
-        //     position: absolute;
-        //     top: 0;
-        //     left: -100%; // Start off-screen to the left
-        //     width: 100%;
-        //     height: 100%;
-        //     background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.3), transparent); // Subtle black shimmer
-        //     animation: shimmer 2.5s infinite linear; // Adjust duration and timing function
-        //     animation-play-state: paused; // Start paused, play on track playing
-        //     pointer-events: none; // Ensure clicks pass through
-        // }
+        /* NEW SHIMMER EFFECT CSS */
+        .shimmer-active .shimmer-effect {
+            background: linear-gradient(90deg, #fff 0%, #aaa 50%, #fff 100%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: modern-shimmer 2.5s infinite linear;
+        }
 
-        // // Play the shimmer when h2 has the .shimmer-active class
-        // h2.shimmer-active .shimmer-effect::before {
-        //     animation-play-state: running;
-        // }
-
-        // @keyframes shimmer {
-        //     0% { left: -100%; }
-        //     100% { left: 100%; }
-        // }
-
-        // --- End of commented out shimmer CSS ---
-        */
+        @keyframes modern-shimmer {
+            0% {
+                background-position: 100% 0;
+            }
+            100% {
+                background-position: -100% 0;
+            }
+        }
 
         .controls {
             display: flex;
@@ -418,8 +407,6 @@
         canvas.height = canvas.offsetHeight;
     }
 
-    // --- Shimmer effect JS is now commented out ---
-
     /**
      * Controls the shimmer effect on the track title.
      * @param {boolean} isActive - True to activate shimmer, false to deactivate.
@@ -428,30 +415,21 @@
         let trackTitleText = tracks[currentTrackIndex]?.title || "";
         currentTrackDisplay.innerHTML = ''; // Clear content first
 
-        // Use a simple text display without the shimmer effect
-        currentTrackDisplay.textContent = trackTitleText;
-        if (tracks[currentTrackIndex]?.isNew) {
-            currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
+        if (isActive) {
+            currentTrackDisplay.innerHTML = `<span class="shimmer-effect">${trackTitleText}</span>`;
+            if (tracks[currentTrackIndex]?.isNew) {
+                currentTrackDisplay.innerHTML += ` <span class="rainbow-new">NEW</span>`;
+            }
+            currentTrackDisplay.classList.add('shimmer-active');
+        } else {
+            currentTrackDisplay.textContent = trackTitleText;
+            if (tracks[currentTrackIndex]?.isNew) {
+                currentTrackDisplay.innerHTML += ` <span class="rainbow-new">NEW</span>`;
+            }
+            currentTrackDisplay.classList.remove('shimmer-active');
         }
-        
-        // Remove the shimmer-active class to prevent any shimmer CSS from applying
-        currentTrackDisplay.classList.remove('shimmer-active');
-
-        // Original logic was:
-        // if (isActive) {
-        //     currentTrackDisplay.innerHTML = `<span class="shimmer-effect">${trackTitleText}</span>`;
-        //     if (tracks[currentTrackIndex]?.isNew) {
-        //         currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
-        //     }
-        //     currentTrackDisplay.classList.add('shimmer-active');
-        // } else {
-        //     currentTrackDisplay.textContent = trackTitleText;
-        //     if (tracks[currentTrackIndex]?.isNew) {
-        //         currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
-        //     }
-        //     currentTrackDisplay.classList.remove('shimmer-active');
-        // }
     }
+
 
     // SVG icons for play and pause
     const playIconSVG = `
@@ -498,13 +476,13 @@
                 isPlaying = true;
                 playPauseButton.innerHTML = pauseIconSVG; // Set to pause icon
                 drawVisualizer(); // Start visualizer
-                // setShimmerState(true); // Shimmer effect commented out
+                setShimmerState(true); // Shimmer effect re-enabled
                 trackPlayed(track.title); // Track play only on successful play
             }).catch(error => {
                 console.warn("Autoplay prevented:", error);
                 isPlaying = false;
                 playPauseButton.innerHTML = playIconSVG; // Set to play icon if autoplay fails
-                // setShimmerState(false); // Shimmer effect commented out
+                setShimmerState(false); // Shimmer effect re-enabled
             });
         } else {
             isPlaying = false;
@@ -513,7 +491,7 @@
             // Reset seek bar visuals for new track load
             seekBarProgress.style.width = '0%';
             seekBarThumb.style.left = '0px';
-            // setShimmerState(false); // Shimmer effect commented out
+            setShimmerState(false); // Shimmer effect re-enabled
         }
     }
 
@@ -529,19 +507,19 @@
                 playPauseButton.innerHTML = pauseIconSVG; // Change to pause icon
                 drawVisualizer();
                 hasUserInitiatedPlayback = true; // Set this flag on the very first successful play
-                // setShimmerState(true); // Shimmer effect commented out
+                setShimmerState(true); // Shimmer effect re-enabled
                 trackPlayed(tracks[currentTrackIndex]?.title); // Track play
             }).catch(error => {
                 console.warn("Playback prevented (likely no user gesture yet):", error);
                 isPlaying = false;
                 playPauseButton.innerHTML = playIconSVG; // Change back to play icon
-                // setShimmerState(false); // Shimmer effect commented out
+                setShimmerState(false); // Shimmer effect re-enabled
             });
         } else {
             audio.pause();
             isPlaying = false;
             playPauseButton.innerHTML = playIconSVG; // Change to play icon
-            // setShimmerState(false); // Shimmer effect commented out
+            setShimmerState(false); // Shimmer effect re-enabled
         }
     }
 
@@ -632,7 +610,7 @@
 
     // Event listener for when audio finishes
     audio.addEventListener('ended', () => {
-        // setShimmerState(false); // Shimmer effect commented out
+        setShimmerState(false); // Shimmer effect re-enabled
         currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
         loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
     });
@@ -758,16 +736,13 @@ window.addEventListener('load', () => {
             
             loadTrack(currentTrackIndex, false); // Do not auto-play on initial load
         } else {
-            showStatusMessage("No music tracks found! Please add them to tracks.json.", 5000);
+            showStatusMessage("No tracks found or loaded.");
         }
-    }).catch(error => {
-        console.error("Initial track loading failed:", error);
-        showStatusMessage("Failed to load tracks initially. Try refreshing.", 5000);
     });
-});
 
+    // Listen for window resize to adjust canvas
     window.addEventListener('resize', resizeCanvas);
+});
 </script>
-
 </body>
 </html>
