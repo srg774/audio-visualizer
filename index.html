@@ -60,130 +60,110 @@
             margin-top: 20px;
         }
 
-        h2#current-track-display {
+        h2 {
             font-size: 1.5rem;
             margin-bottom: 20px;
-            /* Shimmer effect container styles */
-            position: relative;
-            display: inline-block; /* Shrink to content width */
-            /* overflow: hidden; */ /* Hide the shimmer when it's outside the text area */
-            padding: 5px 0; /* Give some vertical padding for the shimmer to fully pass */
+            font-weight: bold; /* Ensure text is bold for a better effect */
+            /* NEW: Styles for the "pulse" effect */
+            color: transparent; /* Makes the original text color transparent */
+            background-clip: text; /* Clips the background gradient to the text shape */
+            -webkit-background-clip: text; /* For Webkit browsers */
+            background-size: 200% 100%; /* Make the gradient wider than the text */
+            background-position: 100% 0; /* Position the gradient to the right, so it's not visible initially */
+            transition: background-position 0.5s ease-in-out; /* Smooth transition for the effect */
+            display: inline-block; /* Essential for text-based effects to work */
         }
 
-        /*
-        // --- Shimmer effect CSS is commented out below ---
+        /* Define the grayscale gradient */
+        .silver-pulse-effect {
+            background-image: linear-gradient(90deg, #333 0%, #eee 50%, #333 100%);
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+        }
         
-        // h2 .shimmer-effect::before {
-        //     content: '';
-        //     position: absolute;
-        //     top: 0;
-        //     left: -100%; // Start off-screen to the left
-        //     width: 100%;
-        //     height: 100%;
-        //     background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.3), transparent); // Subtle black shimmer
-        //     animation: shimmer 2.5s infinite linear; // Adjust duration and timing function
-        //     animation-play-state: paused; // Start paused, play on track playing
-        //     pointer-events: none; // Ensure clicks pass through
-        // }
-
-        // // Play the shimmer when h2 has the .shimmer-active class
-        // h2.shimmer-active .shimmer-effect::before {
-        //     animation-play-state: running;
-        // }
-
-        // @keyframes shimmer {
-        //     0% { left: -100%; }
-        //     100% { left: 100%; }
-        // }
-
-        // --- End of commented out shimmer CSS ---
-        */
+        /* Activate the animation when the track is playing */
+        h2.shimmer-active {
+            animation: silver-pulse 2s infinite ease-in-out; /* The main animation for the effect */
+        }
+        
+        /* Keyframes for the animation */
+        @keyframes silver-pulse {
+            0% { background-position: 100% 0; }
+            50% { background-position: 0% 0; }
+            100% { background-position: -100% 0; }
+        }
 
         .controls {
             display: flex;
             gap: 15px;
-            margin: 20px auto; /* Centered with auto margins */
+            margin: 20px auto;
             width: 80%;
             max-width: 600px;
             justify-content: center;
             align-items: center;
-            position: relative; /* Needed for positioning elements within it */
+            position: relative;
         }
 
-        /* Removed border and adjusted background for general control buttons */
         .controls button {
-            background: none; /* Make background transparent by default */
-            border: none; /* Remove border entirely for these buttons */
+            background: none;
+            border: none;
             color: white;
-            border-radius: 50%; /* Make them circular */
+            border-radius: 50%;
             cursor: pointer;
             transition: background 0.3s;
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 50px; /* Set a fixed size for consistent circles */
+            width: 50px;
             height: 50px;
-            padding: 0; /* Remove padding as content is sized by SVG */
+            padding: 0;
         }
 
         .controls button:hover {
-            background: rgba(255, 255, 255, 0.2); /* Subtle white circular highlight on hover */
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        /* The .icon-button class becomes primarily for sizing and centering SVGs */
         .icon-button {
             background: none;
-            border: none; /* Ensure no border */
+            border: none;
             color: white;
-            padding: 0; /* Ensure no padding affecting size */
-            border-radius: 50%; /* Default to circular for all icon buttons */
+            padding: 0;
+            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: background 0.3s; /* Only transition background */
-            width: 40px; /* Default size for smaller icon buttons like refresh */
+            transition: background 0.3s;
+            width: 40px;
             height: 40px;
         }
 
-        /* Specific sizing for the main control icons (prev, play/pause, next) */
         .controls .icon-button {
-            width: 50px; /* Larger circular area for these */
+            width: 50px;
             height: 50px;
-            /* No border-radius override here, keep 50% for circular shape */
         }
 
-        /* --- NEW RULE FOR PLAY/PAUSE BUTTON SIZE --- */
         #play-pause-button {
-            width: 60px;  /* 20% larger than 50px */
-            height: 60px; /* 20% larger than 50px */
+            width: 60px;
+            height: 60px;
         }
 
-        /* Adjust the SVG inside the larger play/pause button */
         #play-pause-button svg {
-            width: 30px; /* Adjust SVG size for the larger button, approximately 20% larger than 24px */
+            width: 30px;
             height: 30px;
         }
-        /* ------------------------------------------- */
-
 
         .controls .icon-button svg {
-            width: 24px; /* Larger icons for main controls (prev/next) */
+            width: 24px;
             height: 24px;
         }
 
 
-        /* No hover specific to .icon-button, inherited from .controls button:hover */
-        /* .icon-button:hover is now handled by .controls button:hover */
-
-
-        /* Base icon button SVG size (e.g. for the refresh button) */
         .icon-button svg {
             width: 20px;
             height: 20px;
         }
 
-        /* Seek bar styling */
         .seek-bar-container {
             width: 80%;
             height: 12px;
@@ -215,50 +195,43 @@
             height: 14px;
             background: white;
             border-radius: 50%;
-            pointer-events: none; /* Allow clicks to pass through to seek-bar */
+            pointer-events: none;
         }
 
-        /* Canvas visualizer styling */
         canvas {
             width: 100%;
             height: 60vh;
-            background: transparent; /* Keep this transparent so your body background shows */
+            background: transparent;
         }
 
-        /* Footer styling and refresh button positioning */
         footer {
-            margin-top: auto; /* Pushes footer to the bottom */
+            margin-top: auto;
             padding: 10px;
-            position: relative; /* Make footer the positioning context for the button */
-            width: 100%; /* Ensure footer spans full width for consistent positioning */
-            display: flex; /* Flexbox for centering footer content */
-            justify-content: center; /* Center footer text */
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
             align-items: center;
         }
         footer p {
-            margin: 0; /* Remove default paragraph margin */
+            margin: 0;
         }
 
-        /* Specific position for the refresh button (bottom-right within footer) */
         .icon-button.bottom-right {
             position: absolute;
-            bottom: 20px; /* Distance from bottom of footer */
-            right: 20px; /* Distance from right of footer */
-            margin: 0; /* Override any other margins */
-
-            /* Ensure it's circular and sized appropriately */
+            bottom: 20px;
+            right: 20px;
+            margin: 0;
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            padding: 0; /* No padding, icon sizes it */
+            padding: 0;
         }
 
-        /* Refresh button specific hover effect */
         .icon-button.bottom-right:hover {
-            background: rgba(255, 255, 255, 0.2); /* Same circular highlight */
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        /* Rainbow "NEW" tag styling */
         .rainbow-new {
             font-style: italic;
             font-weight: bold;
@@ -275,24 +248,22 @@
             100% { filter: hue-rotate(360deg); }
         }
 
-        /* Status message styling (for "New tracks added!" etc.) */
         .status-message {
-            position: fixed; /* Fixed position relative to viewport */
-            /* Adjusted positioning to be above the refresh button area */
-            bottom: 80px; /* Approximately above the refresh button, adjust as needed */
-            left: 50%; /* Center horizontally */
-            transform: translateX(-50%); /* Adjust for true centering */
-            background-color: rgba(50, 50, 50, 0.9); /* Dark semi-transparent background */
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(50, 50, 50, 0.9);
             color: white;
             padding: 10px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            opacity: 0; /* Start hidden */
-            visibility: hidden; /* Start hidden */
+            opacity: 0;
+            visibility: hidden;
             transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
-            z-index: 1000; /* Ensure it's on top of other content */
+            z-index: 1000;
             font-size: 0.9rem;
-            white-space: nowrap; /* Prevent text wrapping */
+            white-space: nowrap;
         }
 
         .status-message.show {
@@ -418,39 +389,28 @@
         canvas.height = canvas.offsetHeight;
     }
 
-    // --- Shimmer effect JS is now commented out ---
-
     /**
-     * Controls the shimmer effect on the track title.
-     * @param {boolean} isActive - True to activate shimmer, false to deactivate.
+     * Controls the silver "pulse" effect on the track title.
+     * @param {boolean} isActive - True to activate effect, false to deactivate.
      */
     function setShimmerState(isActive) {
         let trackTitleText = tracks[currentTrackIndex]?.title || "";
         currentTrackDisplay.innerHTML = ''; // Clear content first
 
-        // Use a simple text display without the shimmer effect
-        currentTrackDisplay.textContent = trackTitleText;
-        if (tracks[currentTrackIndex]?.isNew) {
-            currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
+        if (isActive) {
+            currentTrackDisplay.innerHTML = `<span class="silver-pulse-effect">${trackTitleText}</span>`;
+            if (tracks[currentTrackIndex]?.isNew) {
+                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
+            }
+            currentTrackDisplay.classList.add('shimmer-active');
+        } else {
+            // We'll reset the element to its default white color for a clean stop
+            currentTrackDisplay.textContent = trackTitleText;
+            if (tracks[currentTrackIndex]?.isNew) {
+                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
+            }
+            currentTrackDisplay.classList.remove('shimmer-active');
         }
-        
-        // Remove the shimmer-active class to prevent any shimmer CSS from applying
-        currentTrackDisplay.classList.remove('shimmer-active');
-
-        // Original logic was:
-        // if (isActive) {
-        //     currentTrackDisplay.innerHTML = `<span class="shimmer-effect">${trackTitleText}</span>`;
-        //     if (tracks[currentTrackIndex]?.isNew) {
-        //         currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
-        //     }
-        //     currentTrackDisplay.classList.add('shimmer-active');
-        // } else {
-        //     currentTrackDisplay.textContent = trackTitleText;
-        //     if (tracks[currentTrackIndex]?.isNew) {
-        //         currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
-        //     }
-        //     currentTrackDisplay.classList.remove('shimmer-active');
-        // }
     }
 
     // SVG icons for play and pause
@@ -498,13 +458,13 @@
                 isPlaying = true;
                 playPauseButton.innerHTML = pauseIconSVG; // Set to pause icon
                 drawVisualizer(); // Start visualizer
-                // setShimmerState(true); // Shimmer effect commented out
+                setShimmerState(true); // Start shimmer
                 trackPlayed(track.title); // Track play only on successful play
             }).catch(error => {
                 console.warn("Autoplay prevented:", error);
                 isPlaying = false;
                 playPauseButton.innerHTML = playIconSVG; // Set to play icon if autoplay fails
-                // setShimmerState(false); // Shimmer effect commented out
+                setShimmerState(false); // Stop shimmer if play fails
             });
         } else {
             isPlaying = false;
@@ -513,7 +473,7 @@
             // Reset seek bar visuals for new track load
             seekBarProgress.style.width = '0%';
             seekBarThumb.style.left = '0px';
-            // setShimmerState(false); // Shimmer effect commented out
+            setShimmerState(false); // Ensure shimmer is off
         }
     }
 
@@ -529,19 +489,19 @@
                 playPauseButton.innerHTML = pauseIconSVG; // Change to pause icon
                 drawVisualizer();
                 hasUserInitiatedPlayback = true; // Set this flag on the very first successful play
-                // setShimmerState(true); // Shimmer effect commented out
+                setShimmerState(true); // Start shimmer on play
                 trackPlayed(tracks[currentTrackIndex]?.title); // Track play
             }).catch(error => {
                 console.warn("Playback prevented (likely no user gesture yet):", error);
                 isPlaying = false;
                 playPauseButton.innerHTML = playIconSVG; // Change back to play icon
-                // setShimmerState(false); // Shimmer effect commented out
+                setShimmerState(false); // Stop shimmer if play fails
             });
         } else {
             audio.pause();
             isPlaying = false;
             playPauseButton.innerHTML = playIconSVG; // Change to play icon
-            // setShimmerState(false); // Shimmer effect commented out
+            setShimmerState(false); // Stop shimmer on pause
         }
     }
 
@@ -632,7 +592,7 @@
 
     // Event listener for when audio finishes
     audio.addEventListener('ended', () => {
-        // setShimmerState(false); // Shimmer effect commented out
+        setShimmerState(false); // Stop shimmer when track ends
         currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
         loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
     });
@@ -741,30 +701,30 @@
 
 
     // Initial setup when the page loads
-window.addEventListener('load', () => {
-    resizeCanvas();
-    // Load tracks initially from tracks.json
-    refreshTrackList().then(() => {
-        if (tracks.length > 0) {
-            // Find the index of the first track marked as 'isNew'
-            const newTrackIndex = tracks.findIndex(track => track.isNew);
-            
-            // If an 'isNew' track is found, use its index. Otherwise, default to the first track.
-            if (newTrackIndex !== -1) {
-                currentTrackIndex = newTrackIndex;
+    window.addEventListener('load', () => {
+        resizeCanvas();
+        // Load tracks initially from tracks.json
+        refreshTrackList().then(() => {
+            if (tracks.length > 0) {
+                // Find the index of the first track marked as 'isNew'
+                const newTrackIndex = tracks.findIndex(track => track.isNew);
+                
+                // If an 'isNew' track is found, use its index. Otherwise, default to the first track.
+                if (newTrackIndex !== -1) {
+                    currentTrackIndex = newTrackIndex;
+                } else {
+                    currentTrackIndex = 0;
+                }
+                
+                loadTrack(currentTrackIndex, false); // Do not auto-play on initial load
             } else {
-                currentTrackIndex = 0;
+                showStatusMessage("No music tracks found! Please add them to tracks.json.", 5000);
             }
-            
-            loadTrack(currentTrackIndex, false); // Do not auto-play on initial load
-        } else {
-            showStatusMessage("No music tracks found! Please add them to tracks.json.", 5000);
-        }
-    }).catch(error => {
-        console.error("Initial track loading failed:", error);
-        showStatusMessage("Failed to load tracks initially. Try refreshing.", 5000);
+        }).catch(error => {
+            console.error("Initial track loading failed:", error);
+            showStatusMessage("Failed to load tracks initially. Try refreshing.", 5000);
+        });
     });
-});
 
     window.addEventListener('resize', resizeCanvas);
 </script>
