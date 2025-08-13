@@ -1,404 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SRG774 Music</title>
+
+    <meta property="og:title" content="srg774's Music"/>
+    <meta property="og:description" content="Showcasing my original tracks"/>
+    <meta property="og:image" content="assets/android-chrome-512x512.png"/>
+    <meta property="og:url" content="https://srg774.github.io/audio-visualizer/"/>
+    <meta property="og:type" content="website"/>
+
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+    <link rel="icon" type="type/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="shortcut icon" href="assets/favicon/favicon.ico">
+    <link rel="apple-touch-icon" href="assets/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+
+    <script data-goatcounter="https://srg774.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: #000; /* Fallback if image fails */
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden; /* Prevent scrollbars due to fixed background */
+            text-align: center;
+            position: relative; /* Needed for the ::before pseudo-element overlay */
+            z-index: 1; /* Ensures body content is above the overlay */
+        }
+
+        /* Semi-transparent overlay for better text readability */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity as needed */
+            z-index: -1; /* Places the overlay behind the body's content */
+        }
+
+        h1 {
+            font-size: 0rem; /* Currently set to 0, so it's invisible */
+            margin-top: 20px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            /* Shimmer effect container styles */
+            position: relative;
+            display: inline-block; /* Shrink to content width */
+            overflow: hidden; /* Hide the shimmer when it's outside the text area */
+            padding: 5px 0; /* Give some vertical padding for the shimmer to fully pass */
+        }
+
+        /* Shimmer effect pseudo-element */
+        h2 .shimmer-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%; /* Start off-screen to the left */
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.3), transparent); /* Subtle black shimmer */
+            animation: shimmer 2.5s infinite linear; /* Adjust duration and timing function */
+            animation-play-state: paused; /* Start paused, play on track playing */
+            pointer-events: none; /* Ensure clicks pass through */
+        }
+
+        /* Play the shimmer when h2 has the .shimmer-active class */
+        h2.shimmer-active .shimmer-effect::before {
+            animation-play-state: running;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px auto; /* Centered with auto margins */
+            width: 80%;
+            max-width: 600px;
+            justify-content: center;
+            align-items: center;
+            position: relative; /* Needed for positioning elements within it */
+        }
+
+        /* Removed border and adjusted background for general control buttons */
+        .controls button {
+            background: none; /* Make background transparent by default */
+            border: none; /* Remove border entirely for these buttons */
+            color: white;
+            border-radius: 50%; /* Make them circular */
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px; /* Set a fixed size for consistent circles */
+            height: 50px;
+            padding: 0; /* Remove padding as content is sized by SVG */
+        }
+
+        .controls button:hover {
+            background: rgba(255, 255, 255, 0.2); /* Subtle white circular highlight on hover */
+        }
+
+        /* The .icon-button class becomes primarily for sizing and centering SVGs */
+        .icon-button {
+            background: none;
+            border: none; /* Ensure no border */
+            color: white;
+            padding: 0; /* Ensure no padding affecting size */
+            border-radius: 50%; /* Default to circular for all icon buttons */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s; /* Only transition background */
+            width: 40px; /* Default size for smaller icon buttons like refresh */
+            height: 40px;
+        }
+
+        /* Specific sizing for the main control icons (prev, play/pause, next) */
+        .controls .icon-button {
+            width: 50px; /* Larger circular area for these */
+            height: 50px;
+            /* No border-radius override here, keep 50% for circular shape */
+        }
+
+        /* --- NEW RULE FOR PLAY/PAUSE BUTTON SIZE --- */
+        #play-pause-button {
+            width: 60px;  /* 20% larger than 50px */
+            height: 60px; /* 20% larger than 50px */
+        }
+
+        /* Adjust the SVG inside the larger play/pause button */
+        #play-pause-button svg {
+            width: 30px; /* Adjust SVG size for the larger button, approximately 20% larger than 24px */
+            height: 30px;
+        }
+        /* ------------------------------------------- */
+
+
+        .controls .icon-button svg {
+            width: 24px; /* Larger icons for main controls (prev/next) */
+            height: 24px;
+        }
+
+
+        /* No hover specific to .icon-button, inherited from .controls button:hover */
+        /* .icon-button:hover is now handled by .controls button:hover */
+
+
+        /* Base icon button SVG size (e.g. for the refresh button) */
+        .icon-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Seek bar styling */
+        .seek-bar-container {
+            width: 80%;
+            height: 12px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .seek-bar {
+            width: 100%;
+            height: 100%;
+            background: #333;
+            border-radius: 6px;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .seek-bar-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #00f, #00bfff);
+            width: 0%;
+        }
+
+        .seek-bar-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none; /* Allow clicks to pass through to seek-bar */
+        }
+
+        /* Canvas visualizer styling */
+        canvas {
+            width: 100%;
+            height: 60vh;
+            background: transparent; /* Keep this transparent so your body background shows */
+        }
+
+        /* Footer styling and refresh button positioning */
+        footer {
+            margin-top: auto; /* Pushes footer to the bottom */
+            padding: 10px;
+            position: relative; /* Make footer the positioning context for the button */
+            width: 100%; /* Ensure footer spans full width for consistent positioning */
+            display: flex; /* Flexbox for centering footer content */
+            justify-content: center; /* Center footer text */
+            align-items: center;
+        }
+        footer p {
+            margin: 0; /* Remove default paragraph margin */
+        }
+
+        /* Specific position for the refresh button (bottom-right within footer) */
+        .icon-button.bottom-right {
+            position: absolute;
+            bottom: 20px; /* Distance from bottom of footer */
+            right: 20px; /* Distance from right of footer */
+            margin: 0; /* Override any other margins */
+
+            /* Ensure it's circular and sized appropriately */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            padding: 0; /* No padding, icon sizes it */
+        }
+
+        /* Refresh button specific hover effect */
+        .icon-button.bottom-right:hover {
+            background: rgba(255, 255, 255, 0.2); /* Same circular highlight */
+        }
+
+        /* Rainbow "NEW" tag styling */
+        .rainbow-new {
+            font-style: italic;
+            font-weight: bold;
+            margin-left: 10px;
+            background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 3s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        /* Status message styling (for "New tracks added!" etc.) */
+        .status-message {
+            position: fixed; /* Fixed position relative to viewport */
+            /* Adjusted positioning to be above the refresh button area */
+            bottom: 80px; /* Approximately above the refresh button, adjust as needed */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for true centering */
+            background-color: rgba(50, 50, 50, 0.9); /* Dark semi-transparent background */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0; /* Start hidden */
+            visibility: hidden; /* Start hidden */
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+            z-index: 1000; /* Ensure it's on top of other content */
+            font-size: 0.9rem;
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+
+        .status-message.show {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>SRG774 &copy;</h1>
+
+    <h2 id="current-track-display"></h2>
+
+    <div class="controls">
+        <button id="prev-button" class="icon-button" aria-label="Previous Track">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                <line x1="5" y1="19" x2="5" y2="5"></line>
+            </svg>
+        </button>
+        <button id="play-pause-button" class="icon-button" aria-label="Play/Pause">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+        </button>
+        <button id="next-button" class="icon-button" aria-label="Next Track">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                <line x1="19" y1="5" x2="19" y2="19"></line>
+            </svg>
+        </button>
+    </div>
+
+    <div class="seek-bar-container">
+        <div class="seek-bar" id="seek-bar">
+            <div class="seek-bar-progress" id="seek-bar-progress"></div>
+            <div class="seek-bar-thumb" id="seek-bar-thumb"></div>
+        </div>
+    </div>
+
+    <audio id="audio"></audio>
+
+    <canvas id="visualizer"></canvas>
+
+    <footer>
+        <p>SRG774 &copy;</p>
+        <button id="refresh-tracks-button" class="icon-button bottom-right" aria-label="Refresh Track List">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6"></path>
+                <path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.32L23 10M1 14l4.64 4.32A9 9 0 0 0 20.49 15"></path>
+            </svg>
+        </button>
+    </footer>
+
+    <div id="status-message" class="status-message"></div>
+
 <script>
-    // The 'tracks' array that the player actively uses. It will be populated by refreshTrackList.
-    let tracks = []; // Start with an empty array
+    // The 'tracks' array that the player actively uses. It will be populated by refreshTrackList.
+    let tracks = []; // Start with an empty array
 
-    let currentTrackIndex = 0; // Will be set to a random track after initial load
-    let isPlaying = false;
-    let hasUserInitiatedPlayback = false; // Flag to track if user has initiated playback at least once
+    let currentTrackIndex = 0; // Will be set to a random track after initial load
+    let isPlaying = false;
+    let hasUserInitiatedPlayback = false; // Flag to track if user has initiated playback at least once
 
-    // Get references to HTML elements
-    const audio = document.getElementById('audio');
-    const currentTrackDisplay = document.getElementById('current-track-display');
-    const playPauseButton = document.getElementById('play-pause-button');
-    const prevButton = document.getElementById('prev-button');
-    const nextButton = document.getElementById('next-button');
-    const seekBar = document.getElementById('seek-bar');
-    const seekBarProgress = document.getElementById('seek-bar-progress');
-    const seekBarThumb = document.getElementById('seek-bar-thumb');
-    const canvas = document.getElementById('visualizer');
-    const ctx = canvas.getContext('2d');
+    // Get references to HTML elements
+    const audio = document.getElementById('audio');
+    const currentTrackDisplay = document.getElementById('current-track-display');
+    const playPauseButton = document.getElementById('play-pause-button');
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
+    const seekBar = document.getElementById('seek-bar');
+    const seekBarProgress = document.getElementById('seek-bar-progress');
+    const seekBarThumb = document.getElementById('seek-bar-thumb');
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
 
-    // New element references for the refresh feature and status messages
-    const refreshTracksButton = document.getElementById('refresh-tracks-button');
-    const statusMessageDiv = document.getElementById('status-message');
+    // New element references for the refresh feature and status messages
+    const refreshTracksButton = document.getElementById('refresh-tracks-button');
+    const statusMessageDiv = document.getElementById('status-message');
 
-    // Setup Web Audio API for visualizer and compressor
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const compressor = audioContext.createDynamicsCompressor(); // Dynamics Compressor for "auto-max" effect
+    // Setup Web Audio API for visualizer and compressor
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    const compressor = audioContext.createDynamicsCompressor(); // Dynamics Compressor for "auto-max" effect
 
-    let source; // Audio source node, connected after user gesture
-    let audioSourceConnected = false; // Flag to track if the audio source has been connected
+    let source; // Audio source node, connected after user gesture
+    let audioSourceConnected = false; // Flag to track if the audio source has been connected
 
-    // Function to ensure the AudioContext is running and source is connected
-    function ensureAudioContextAndSource() {
-        if (audioContext.state === 'suspended') {
-            audioContext.resume().then(() => {
-                console.log('AudioContext resumed!');
-                if (!audioSourceConnected) {
-                    source = audioContext.createMediaElementSource(audio);
-                    source.connect(compressor); // Source connects to compressor
-                    compressor.connect(analyser); // Compressor connects to analyser
-                    analyser.connect(audioContext.destination); // Analyser connects to speakers
-                    audioSourceConnected = true;
-                }
-            }).catch(e => console.error("Error resuming AudioContext:", e));
-        } else {
-            if (!audioSourceConnected) {
-                source = audioContext.createMediaElementSource(audio);
-                source.connect(compressor); // Source connects to compressor
-                compressor.connect(analyser); // Compressor connects to analyser
-                analyser.connect(audioContext.destination); // Analyser connects to speakers
-                audioSourceConnected = true;
-            }
-        }
-    }
+    // Function to ensure the AudioContext is running and source is connected
+    function ensureAudioContextAndSource() {
+        if (audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                console.log('AudioContext resumed!');
+                if (!audioSourceConnected) {
+                    source = audioContext.createMediaElementSource(audio);
+                    source.connect(compressor); // Source connects to compressor
+                    compressor.connect(analyser); // Compressor connects to analyser
+                    analyser.connect(audioContext.destination); // Analyser connects to speakers
+                    audioSourceConnected = true;
+                }
+            }).catch(e => console.error("Error resuming AudioContext:", e));
+        } else {
+            if (!audioSourceConnected) {
+                source = audioContext.createMediaElementSource(audio);
+                source.connect(compressor); // Source connects to compressor
+                compressor.connect(analyser); // Compressor connects to analyser
+                analyser.connect(audioContext.destination); // Analyser connects to speakers
+                audioSourceConnected = true;
+            }
+        }
+    }
 
-    // Analyser settings for the visualizer
-    analyser.fftSize = 256;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+    // Analyser settings for the visualizer
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
 
-    // Resize canvas to match its displayed size for proper rendering
-    function resizeCanvas() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-    }
+    // Resize canvas to match its displayed size for proper rendering
+    function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
 
-    /**
-     * Controls the shimmer effect on the track title.
-     * @param {boolean} isActive - True to activate shimmer, false to deactivate.
-     */
-    // --- START OF MODIFIED CODE BLOCK ---
-    function setShimmerState(isActive) {
-        // We are disabling the shimmer effect, so we always treat the state as inactive.
-        let trackTitleText = tracks[currentTrackIndex]?.title || "";
-        currentTrackDisplay.innerHTML = ''; // Clear content first
+    /**
+     * Controls the shimmer effect on the track title.
+     * @param {boolean} isActive - True to activate shimmer, false to deactivate.
+     */
+    function setShimmerState(isActive) {
+        let trackTitleText = tracks[currentTrackIndex]?.title || "";
+        currentTrackDisplay.innerHTML = ''; // Clear content first
 
-        // Always use the non-shimmer logic to display the title.
-        currentTrackDisplay.textContent = trackTitleText;
-        // Check if the 'isNew' tag should be added
-        if (tracks[currentTrackIndex]?.isNew) {
-            currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
-        }
-        // Always ensure the shimmer-active class is removed
-        currentTrackDisplay.classList.remove('shimmer-active');
-    }
-    // --- END OF MODIFIED CODE BLOCK ---
+        currentTrackDisplay.textContent = trackTitleText;
+        if (tracks[currentTrackIndex]?.isNew) {
+            currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
+        }
+        currentTrackDisplay.classList.remove('shimmer-active');
+    }
 
-    // SVG icons for play and pause
-    const playIconSVG = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
-    `;
-    const pauseIconSVG = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="6" y="4" width="4" height="16"></rect>
-            <rect x="14" y="4" width="4" height="16"></rect>
-        </svg>
-    `;
+    // SVG icons for play and pause
+    const playIconSVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+    `;
+    const pauseIconSVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+    `;
 
-    /**
-     * Loads a track and optionally attempts to auto-play it.
-     * @param {number} index - The index of the track to load.
-     * @param {boolean} shouldAutoPlay - Whether the track should attempt to auto-play.
-     */
-    function loadTrack(index, shouldAutoPlay = false) {
-        if (tracks.length === 0) {
-            console.warn("No tracks available to load.");
-            currentTrackDisplay.textContent = "No tracks loaded.";
-            playPauseButton.innerHTML = playIconSVG;
-            return;
-        }
+    /**
+     * Loads a track and optionally attempts to auto-play it.
+     * @param {number} index - The index of the track to load.
+     * @param {boolean} shouldAutoPlay - Whether the track should attempt to auto-play.
+     */
+    function loadTrack(index, shouldAutoPlay = false) {
+        if (tracks.length === 0) {
+            console.warn("No tracks available to load.");
+            currentTrackDisplay.textContent = "No tracks loaded.";
+            playPauseButton.innerHTML = playIconSVG;
+            return;
+        }
 
-        // Ensure index is within bounds of the tracks array length
-        if (index >= tracks.length || index < 0) {
-            index = 0; // Default to first track if out of bounds
-        }
-        currentTrackIndex = index; // Update the global index
+        // Ensure index is within bounds of the tracks array length
+        if (index >= tracks.length || index < 0) {
+            index = 0; // Default to first track if out of bounds
+        }
+        currentTrackIndex = index; // Update the global index
 
-        const track = tracks[currentTrackIndex];
-        audio.src = track.src; // Set the audio source
+        const track = tracks[currentTrackIndex];
+        audio.src = track.src; // Set the audio source
 
-        setShimmerState(false); // Always set initial state to false (no shimmer) on load
+        setShimmerState(false); // Always set initial state to false (no shimmer) on load
 
-        updateMediaSession(); // Update browser's media session info
+        updateMediaSession(); // Update browser's media session info
 
-        if (shouldAutoPlay && hasUserInitiatedPlayback) {
-            ensureAudioContextAndSource();
-            audio.play().then(() => {
-                isPlaying = true;
-                playPauseButton.innerHTML = pauseIconSVG; // Set to pause icon
-                drawVisualizer(); // Start visualizer
-                // The shimmer effect is now permanently disabled via the setShimmerState function.
-                // setShimmerState(true); // OLD: This line is no longer necessary as the function is modified
-                trackPlayed(track.title); // Track play only on successful play
-            }).catch(error => {
-                console.warn("Autoplay prevented:", error);
-                isPlaying = false;
-                playPauseButton.innerHTML = playIconSVG; // Set to play icon if autoplay fails
-                // setShimmerState(false); // OLD: No longer needed
-            });
-        } else {
-            isPlaying = false;
-            audio.pause();
-            playPauseButton.innerHTML = playIconSVG; // Always show play icon if not playing
-            // Reset seek bar visuals for new track load
-            seekBarProgress.style.width = '0%';
-            seekBarThumb.style.left = '0px';
-            // setShimmerState(false); // OLD: No longer needed, handled at the start of the function
-        }
-    }
+        if (shouldAutoPlay && hasUserInitiatedPlayback) {
+            ensureAudioContextAndSource();
+            audio.play().then(() => {
+                isPlaying = true;
+                playPauseButton.innerHTML = pauseIconSVG; // Set to pause icon
+                drawVisualizer(); // Start visualizer
+                trackPlayed(track.title); // Track play only on successful play
+            }).catch(error => {
+                console.warn("Autoplay prevented:", error);
+                isPlaying = false;
+                playPauseButton.innerHTML = playIconSVG; // Set to play icon if autoplay fails
+            });
+        } else {
+            isPlaying = false;
+            audio.pause();
+            playPauseButton.innerHTML = playIconSVG; // Always show play icon if not playing
+            // Reset seek bar visuals for new track load
+            seekBarProgress.style.width = '0%';
+            seekBarThumb.style.left = '0px';
+            setShimmerState(false); // Ensure shimmer is off
+        }
+    }
 
-    // Toggle Play/Pause functionality
-    function togglePlayback() {
-        if (!audioSourceConnected) {
-            ensureAudioContextAndSource(); // Connect nodes if not already connected
-        }
+    // Toggle Play/Pause functionality
+    function togglePlayback() {
+        if (!audioSourceConnected) {
+            ensureAudioContextAndSource(); // Connect nodes if not already connected
+        }
 
-        if (audio.paused) {
-            audio.play().then(() => {
-                isPlaying = true;
-                playPauseButton.innerHTML = pauseIconSVG; // Change to pause icon
-                drawVisualizer();
-                hasUserInitiatedPlayback = true; // Set this flag on the very first successful play
-                // setShimmerState(true); // OLD: No longer needed
-                trackPlayed(tracks[currentTrackIndex]?.title); // Track play
-            }).catch(error => {
-                console.warn("Playback prevented (likely no user gesture yet):", error);
-                isPlaying = false;
-                playPauseButton.innerHTML = playIconSVG; // Change back to play icon
-                // setShimmerState(false); // OLD: No longer needed
-            });
-        } else {
-            audio.pause();
-            isPlaying = false;
-            playPauseButton.innerHTML = playIconSVG; // Change to play icon
-            // setShimmerState(false); // OLD: No longer needed
-        }
-    }
+        if (audio.paused) {
+            audio.play().then(() => {
+                isPlaying = true;
+                playPauseButton.innerHTML = pauseIconSVG; // Change to pause icon
+                drawVisualizer();
+                hasUserInitiatedPlayback = true; // Set this flag on the very first successful play
+                setShimmerState(true); // Start shimmer on play
+                trackPlayed(tracks[currentTrackIndex]?.title); // Track play
+            }).catch(error => {
+                console.warn("Playback prevented (likely no user gesture yet):", error);
+                isPlaying = false;
+                playPauseButton.innerHTML = playIconSVG; // Change back to play icon
+                setShimmerState(false); // Stop shimmer if play fails
+            });
+        } else {
+            audio.pause();
+            isPlaying = false;
+            playPauseButton.innerHTML = playIconSVG; // Change to play icon
+            setShimmerState(false); // Stop shimmer on pause
+        }
+    }
 
-    // Event listeners for player controls
-    playPauseButton.addEventListener('click', togglePlayback);
+    // Event listeners for player controls
+    playPauseButton.addEventListener('click', togglePlayback);
 
-    prevButton.addEventListener('click', () => {
-        currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
-    });
+    prevButton.addEventListener('click', () => {
+        currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
+    });
 
-    nextButton.addEventListener('click', () => {
-        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
-    });
+    nextButton.addEventListener('click', () => {
+        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
+    });
 
-    // Seek Bar Logic: Listen for metadata to ensure duration is known, then update time
-    audio.addEventListener('loadedmetadata', () => {
-        if (!isNaN(audio.duration)) {
-            seekBarProgress.style.width = '0%';
-            const thumbPos = 0;
-            seekBarThumb.style.left = `${thumbPos}px`;
-        }
-    });
+    // Seek Bar Logic: Listen for metadata to ensure duration is known, then update time
+    audio.addEventListener('loadedmetadata', () => {
+        if (!isNaN(audio.duration)) {
+            seekBarProgress.style.width = '0%';
+            const thumbPos = 0;
+            seekBarThumb.style.left = `${thumbPos}px`;
+        }
+    });
 
-    audio.addEventListener('timeupdate', () => {
-        if (!isNaN(audio.duration)) {
-            const progress = (audio.currentTime / audio.duration) * 100;
-            seekBarProgress.style.width = `${progress}%`;
-            const thumbWidth = seekBarThumb.offsetWidth;
-            const seekBarWidth = seekBar.offsetWidth;
-            const thumbPos = (progress / 100) * seekBarWidth;
-            const adjustedThumbPos = Math.max(0, Math.min(seekBarWidth - thumbWidth / 2, thumbPos - (thumbWidth / 2)));
-            seekBarThumb.style.left = `${adjustedThumbPos}px`;
-        }
-    });
+    audio.addEventListener('timeupdate', () => {
+        if (!isNaN(audio.duration)) {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            seekBarProgress.style.width = `${progress}%`;
+            const thumbWidth = seekBarThumb.offsetWidth;
+            const seekBarWidth = seekBar.offsetWidth;
+            const thumbPos = (progress / 100) * seekBarWidth;
+            const adjustedThumbPos = Math.max(0, Math.min(seekBarWidth - thumbWidth / 2, thumbPos - (thumbWidth / 2)));
+            seekBarThumb.style.left = `${adjustedThumbPos}px`;
+        }
+    });
 
-    seekBar.addEventListener('click', (e) => {
-        if (isNaN(audio.duration)) return;
+    seekBar.addEventListener('click', (e) => {
+        if (isNaN(audio.duration)) return;
 
-        const rect = seekBar.getBoundingClientRect();
-        const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-        audio.currentTime = seekTime;
-        if (isPlaying || hasUserInitiatedPlayback) {
-            ensureAudioContextAndSource();
-            audio.play().catch(error => console.warn("Seek-and-play prevented:", error));
-        }
-    });
+        const rect = seekBar.getBoundingClientRect();
+        const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+        audio.currentTime = seekTime;
+        if (isPlaying || hasUserInitiatedPlayback) {
+            ensureAudioContextAndSource();
+            audio.play().catch(error => console.warn("Seek-and-play prevented:", error));
+        }
+    });
 
-    // Visualizer drawing function
-    function drawVisualizer() {
-        if (audioContext.state === 'running' && !audio.paused) {
-            requestAnimationFrame(drawVisualizer);
-            analyser.getByteFrequencyData(dataArray);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Visualizer drawing function
+    function drawVisualizer() {
+        if (audioContext.state === 'running' && !audio.paused) {
+            requestAnimationFrame(drawVisualizer);
+            analyser.getByteFrequencyData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = Math.min(centerX, centerY) * 0.6;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) * 0.6;
 
-            for (let i = 0; i < bufferLength; i++) {
-                const angle = (i / bufferLength) * 2 * Math.PI;
-                const barHeight = (dataArray[i] / 255) * radius * 0.8;
-                const x1 = centerX + Math.cos(angle) * radius;
-                const y1 = centerY + Math.sin(angle) * radius;
-                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
-                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+            for (let i = 0; i < bufferLength; i++) {
+                const angle = (i / bufferLength) * 2 * Math.PI;
+                const barHeight = (dataArray[i] / 255) * radius * 0.8;
+                const x1 = centerX + Math.cos(angle) * radius;
+                const y1 = centerY + Math.sin(angle) * radius;
+                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
 
-                ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-            }
-        }
-    }
+                ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
+    }
 
-    // GoatCounter Analytics tracking for track plays
-    function trackPlayed(trackTitle) {
-        if (window.goatcounter && hasUserInitiatedPlayback) {
-            goatcounter.count({
-                path: `/track/${encodeURIComponent(trackTitle)}`,
-                title: `Track Played: ${trackTitle}`
-            });
-        }
-    }
+    // GoatCounter Analytics tracking for track plays
+    function trackPlayed(trackTitle) {
+        if (window.goatcounter && hasUserInitiatedPlayback) {
+            goatcounter.count({
+                path: `/track/${encodeURIComponent(trackTitle)}`,
+                title: `Track Played: ${trackTitle}`
+            });
+        }
+    }
 
-    // Event listener for when audio finishes
-    audio.addEventListener('ended', () => {
-        setShimmerState(false); // Stop shimmer when track ends
-        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
-    });
+    // Event listener for when audio finishes
+    audio.addEventListener('ended', () => {
+        setShimmerState(false); // Stop shimmer when track ends
+        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+        loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
+    });
 
-    // Update Media Session (for Lock Screen controls)
-    function updateMediaSession() {
-        if ('mediaSession' in navigator) {
-            const track = tracks[currentTrackIndex];
-            if (track) { // Ensure track exists before setting metadata
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: track.title,
-                    artist: 'SRG774',
-                    album: 'My Playlist',
-                    artwork: [
-                        { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
-                    ]
-                });
+    // Update Media Session (for Lock Screen controls)
+    function updateMediaSession() {
+        if ('mediaSession' in navigator) {
+            const track = tracks[currentTrackIndex];
+            if (track) { // Ensure track exists before setting metadata
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: track.title,
+                    artist: 'SRG774',
+                    album: 'My Playlist',
+                    artwork: [
+                        { src: 'assets/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
+                    ]
+                });
 
-                navigator.mediaSession.setActionHandler('play', () => { togglePlayback(); });
-                navigator.mediaSession.setActionHandler('pause', hasUserInitiatedPlayback ? () => { togglePlayback(); } : null);
-                navigator.mediaSession.setActionHandler('previoustrack', () => { prevButton.click(); });
-                navigator.mediaSession.setActionHandler('nexttrack', () => { nextButton.click(); });
-            }
-        }
-    }
+                navigator.mediaSession.setActionHandler('play', () => { togglePlayback(); });
+                navigator.mediaSession.setActionHandler('pause', hasUserInitiatedPlayback ? () => { togglePlayback(); } : null);
+                navigator.mediaSession.setActionHandler('previoustrack', () => { prevButton.click(); });
+                navigator.mediaSession.setActionHandler('nexttrack', () => { nextButton.click(); });
+            }
+        }
+    }
 
-    // --- FUNCTIONS FOR TRACK REFRESH ---
+    // --- FUNCTIONS FOR TRACK REFRESH ---
 
-    // Function to display temporary status messages
-    function showStatusMessage(message, duration = 3000) {
-        statusMessageDiv.textContent = message;
-        statusMessageDiv.classList.add('show');
-        if (statusMessageDiv.timeoutId) {
-            clearTimeout(statusMessageDiv.timeoutId);
-        }
-        statusMessageDiv.timeoutId = setTimeout(() => {
-            statusMessageDiv.classList.remove('show');
-            statusMessageDiv.timeoutId = null;
-        }, duration);
-    }
+    // Function to display temporary status messages
+    function showStatusMessage(message, duration = 3000) {
+        statusMessageDiv.textContent = message;
+        statusMessageDiv.classList.add('show');
+        if (statusMessageDiv.timeoutId) {
+            clearTimeout(statusMessageDiv.timeoutId);
+        }
+        statusMessageDiv.timeoutId = setTimeout(() => {
+            statusMessageDiv.classList.remove('show');
+            statusMessageDiv.timeoutId = null;
+        }, duration);
+    }
 
-    /**
-     * Compares two track lists for differences.
-     * Checks for changes in length, title, src, and isNew status.
-     * @param {Array<Object>} oldList - The existing list of tracks.
-     * @param {Array<Object>} newList - The new list of tracks.
-     * @returns {boolean} True if lists are different (length, or title/src/isNew mismatch), false otherwise.
-     */
-    function haveTracksChanged(oldList, newList) {
-        if (oldList.length !== newList.length) {
-            return true; // Different number of tracks
-        }
-        for (let i = 0; i < oldList.length; i++) {
-            // Compare title, source, and isNew status
-            if (oldList[i].title !== newList[i].title ||
-                oldList[i].src !== newList[i].src ||
-                !!oldList[i].isNew !== !!newList[i].isNew) { // Ensure boolean comparison for isNew
-                return true; // Track details changed
-            }
-        }
-        return false; // No changes detected
-    }
+    /**
+     * Compares two track lists for differences.
+     * Checks for changes in length, title, src, and isNew status.
+     * @param {Array<Object>} oldList - The existing list of tracks.
+     * @param {Array<Object>} newList - The new list of tracks.
+     * @returns {boolean} True if lists are different (length, or title/src/isNew mismatch), false otherwise.
+     */
+    function haveTracksChanged(oldList, newList) {
+        if (oldList.length !== newList.length) {
+            return true; // Different number of tracks
+        }
+        for (let i = 0; i < oldList.length; i++) {
+            // Compare title, source, and isNew status
+            if (oldList[i].title !== newList[i].title ||
+                oldList[i].src !== newList[i].src ||
+                !!oldList[i].isNew !== !!newList[i].isNew) { // Ensure boolean comparison for isNew
+                return true; // Track details changed
+            }
+        }
+        return false; // No changes detected
+    }
 
-    // Function to refresh the track list from the external 'tracks.json' file
-    async function refreshTrackList() {
-        showStatusMessage("Checking for new tracks...", 1500); // Give immediate feedback
-        try {
-            // Fetch tracks.json from the network (service worker will handle caching/freshness)
-            const response = await fetch('tracks.json');
-            if (!response.ok) {
-                throw new Error(`Failed to fetch track list: ${response.status} ${response.statusText}`);
-            }
-            const newTracks = await response.json();
+    // Function to refresh the track list from the external 'tracks.json' file
+    async function refreshTrackList() {
+        showStatusMessage("Checking for new tracks...", 1500); // Give immediate feedback
+        try {
+            // Fetch tracks.json from the network (service worker will handle caching/freshness)
+            const response = await fetch('tracks.json');
+            if (!response.ok) {
+                throw new Error(`Failed to fetch track list: ${response.status} ${response.statusText}`);
+            }
+            const newTracks = await response.json();
 
-            if (haveTracksChanged(tracks, newTracks)) {
-                const oldLength = tracks.length;
-                tracks = newTracks; // Update the active tracks array
+            if (haveTracksChanged(tracks, newTracks)) {
+                const oldLength = tracks.length;
+                tracks = newTracks; // Update the active tracks array
 
-                let message = "";
-                if (tracks.length > oldLength) {
-                    message = "New tracks added!";
-                } else if (tracks.length < oldLength) {
-                    message = "Tracks removed.";
-                } else {
-                    message = "Track list updated!"; // For metadata changes etc.
-                }
-                showStatusMessage(message, 3000);
+                let message = "";
+                if (tracks.length > oldLength) {
+                    message = "New tracks added!";
+                } else if (tracks.length < oldLength) {
+                    message = "Tracks removed.";
+                } else {
+                    message = "Track list updated!"; // For metadata changes etc.
+                }
+                showStatusMessage(message, 3000);
 
-                // If the currently playing track's index is now out of bounds
-                // or the track itself has changed, load the (possibly new) current track.
-                if (currentTrackIndex >= tracks.length || (tracks.length > 0 && tracks[currentTrackIndex]?.src !== audio.src)) {
-                    currentTrackIndex = 0; // Reset to first track if the list changed significantly
-                }
-                loadTrack(currentTrackIndex, isPlaying); // Attempt to continue playing
-            } else {
-                showStatusMessage("Track list is already up-to-date.", 2000);
-            }
-        } catch (error) {
-            console.error("Error refreshing track list:", error);
-            showStatusMessage("Failed to refresh tracks. Check your connection.", 3000);
-        }
-    }
+                // If the currently playing track's index is now out of bounds
+                // or the track itself has changed, load the (possibly new) current track.
+                if (currentTrackIndex >= tracks.length || (tracks.length > 0 && tracks[currentTrackIndex]?.src !== audio.src)) {
+                    currentTrackIndex = 0; // Reset to first track if the list changed significantly
+                }
+                loadTrack(currentTrackIndex, isPlaying); // Attempt to continue playing
+            } else {
+                showStatusMessage("Track list is already up-to-date.", 2000);
+            }
+        } catch (error) {
+            console.error("Error refreshing track list:", error);
+            showStatusMessage("Failed to refresh tracks. Check your connection.", 3000);
+        }
+    }
 
-    // Event listener for the refresh button
-    refreshTracksButton.addEventListener('click', refreshTrackList);
+    // Event listener for the refresh button
+    refreshTracksButton.addEventListener('click', refreshTrackList);
 
 
-    // Initial setup when the page loads
+    // Initial setup when the page loads
 window.addEventListener('load', () => {
-    resizeCanvas();
-    // Load tracks initially from tracks.json
-    refreshTrackList().then(() => {
-        if (tracks.length > 0) {
-            // Find the index of the first track marked as 'isNew'
-            const newTrackIndex = tracks.findIndex(track => track.isNew);
-            
-            // If an 'isNew' track is found, use its index. Otherwise, default to the first track.
-            if (newTrackIndex !== -1) {
-                currentTrackIndex = newTrackIndex;
-            } else {
-                currentTrackIndex = 0;
-            }
-            
-            loadTrack(currentTrackIndex, false); // Do not auto-play on initial load
-        } else {
-            showStatusMessage("No music tracks found! Please add them to tracks.json.", 5000);
-        }
-    }).catch(error => {
-        console.error("Initial track loading failed:", error);
-        showStatusMessage("Failed to load tracks initially. Try refreshing.", 5000);
-    });
+    resizeCanvas();
+    // Load tracks initially from tracks.json
+    refreshTrackList().then(() => {
+        if (tracks.length > 0) {
+            // Find the index of the first track marked as 'isNew'
+            const newTrackIndex = tracks.findIndex(track => track.isNew);
+            
+            // If an 'isNew' track is found, use its index. Otherwise, default to the first track.
+            if (newTrackIndex !== -1) {
+                currentTrackIndex = newTrackIndex;
+            } else {
+                currentTrackIndex = 0;
+            }
+            
+            loadTrack(currentTrackIndex, false); // Do not auto-play on initial load
+        } else {
+            showStatusMessage("No music tracks found! Please add them to tracks.json.", 5000);
+        }
+    }).catch(error => {
+        console.error("Initial track loading failed:", error);
+        showStatusMessage("Failed to load tracks initially. Try refreshing.", 5000);
+    });
 });
 
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);
 </script>
+
+</body>
+</html>
