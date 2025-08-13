@@ -66,33 +66,38 @@
             /* Shimmer effect container styles */
             position: relative;
             display: inline-block; /* Shrink to content width */
-            overflow: hidden; /* Hide the shimmer when it's outside the text area */
+            /* overflow: hidden; */ /* Hide the shimmer when it's outside the text area */
             padding: 5px 0; /* Give some vertical padding for the shimmer to fully pass */
         }
 
-        /* Shimmer effect pseudo-element */
-        h2 .shimmer-effect::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%; /* Start off-screen to the left */
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.3), transparent); /* Subtle black shimmer */
-            animation: shimmer 2.5s infinite linear; /* Adjust duration and timing function */
-            animation-play-state: paused; /* Start paused, play on track playing */
-            pointer-events: none; /* Ensure clicks pass through */
-        }
+        /*
+        // --- Shimmer effect CSS is commented out below ---
+        
+        // h2 .shimmer-effect::before {
+        //     content: '';
+        //     position: absolute;
+        //     top: 0;
+        //     left: -100%; // Start off-screen to the left
+        //     width: 100%;
+        //     height: 100%;
+        //     background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.3), transparent); // Subtle black shimmer
+        //     animation: shimmer 2.5s infinite linear; // Adjust duration and timing function
+        //     animation-play-state: paused; // Start paused, play on track playing
+        //     pointer-events: none; // Ensure clicks pass through
+        // }
 
-        /* Play the shimmer when h2 has the .shimmer-active class */
-        h2.shimmer-active .shimmer-effect::before {
-            animation-play-state: running;
-        }
+        // // Play the shimmer when h2 has the .shimmer-active class
+        // h2.shimmer-active .shimmer-effect::before {
+        //     animation-play-state: running;
+        // }
 
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
+        // @keyframes shimmer {
+        //     0% { left: -100%; }
+        //     100% { left: 100%; }
+        // }
+
+        // --- End of commented out shimmer CSS ---
+        */
 
         .controls {
             display: flex;
@@ -413,6 +418,8 @@
         canvas.height = canvas.offsetHeight;
     }
 
+    // --- Shimmer effect JS is now commented out ---
+
     /**
      * Controls the shimmer effect on the track title.
      * @param {boolean} isActive - True to activate shimmer, false to deactivate.
@@ -421,19 +428,29 @@
         let trackTitleText = tracks[currentTrackIndex]?.title || "";
         currentTrackDisplay.innerHTML = ''; // Clear content first
 
-        if (isActive) {
-            currentTrackDisplay.innerHTML = `<span class="shimmer-effect">${trackTitleText}</span>`;
-            if (tracks[currentTrackIndex]?.isNew) {
-                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
-            }
-            currentTrackDisplay.classList.add('shimmer-active');
-        } else {
-            currentTrackDisplay.textContent = trackTitleText;
-            if (tracks[currentTrackIndex]?.isNew) {
-                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
-            }
-            currentTrackDisplay.classList.remove('shimmer-active');
+        // Use a simple text display without the shimmer effect
+        currentTrackDisplay.textContent = trackTitleText;
+        if (tracks[currentTrackIndex]?.isNew) {
+            currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
         }
+        
+        // Remove the shimmer-active class to prevent any shimmer CSS from applying
+        currentTrackDisplay.classList.remove('shimmer-active');
+
+        // Original logic was:
+        // if (isActive) {
+        //     currentTrackDisplay.innerHTML = `<span class="shimmer-effect">${trackTitleText}</span>`;
+        //     if (tracks[currentTrackIndex]?.isNew) {
+        //         currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
+        //     }
+        //     currentTrackDisplay.classList.add('shimmer-active');
+        // } else {
+        //     currentTrackDisplay.textContent = trackTitleText;
+        //     if (tracks[currentTrackIndex]?.isNew) {
+        //         currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
+        //     }
+        //     currentTrackDisplay.classList.remove('shimmer-active');
+        // }
     }
 
     // SVG icons for play and pause
@@ -481,13 +498,13 @@
                 isPlaying = true;
                 playPauseButton.innerHTML = pauseIconSVG; // Set to pause icon
                 drawVisualizer(); // Start visualizer
-                setShimmerState(true); // Start shimmer
+                // setShimmerState(true); // Shimmer effect commented out
                 trackPlayed(track.title); // Track play only on successful play
             }).catch(error => {
                 console.warn("Autoplay prevented:", error);
                 isPlaying = false;
                 playPauseButton.innerHTML = playIconSVG; // Set to play icon if autoplay fails
-                setShimmerState(false); // Stop shimmer if play fails
+                // setShimmerState(false); // Shimmer effect commented out
             });
         } else {
             isPlaying = false;
@@ -496,7 +513,7 @@
             // Reset seek bar visuals for new track load
             seekBarProgress.style.width = '0%';
             seekBarThumb.style.left = '0px';
-            setShimmerState(false); // Ensure shimmer is off
+            // setShimmerState(false); // Shimmer effect commented out
         }
     }
 
@@ -512,19 +529,19 @@
                 playPauseButton.innerHTML = pauseIconSVG; // Change to pause icon
                 drawVisualizer();
                 hasUserInitiatedPlayback = true; // Set this flag on the very first successful play
-                setShimmerState(true); // Start shimmer on play
+                // setShimmerState(true); // Shimmer effect commented out
                 trackPlayed(tracks[currentTrackIndex]?.title); // Track play
             }).catch(error => {
                 console.warn("Playback prevented (likely no user gesture yet):", error);
                 isPlaying = false;
                 playPauseButton.innerHTML = playIconSVG; // Change back to play icon
-                setShimmerState(false); // Stop shimmer if play fails
+                // setShimmerState(false); // Shimmer effect commented out
             });
         } else {
             audio.pause();
             isPlaying = false;
             playPauseButton.innerHTML = playIconSVG; // Change to play icon
-            setShimmerState(false); // Stop shimmer on pause
+            // setShimmerState(false); // Shimmer effect commented out
         }
     }
 
@@ -615,7 +632,7 @@
 
     // Event listener for when audio finishes
     audio.addEventListener('ended', () => {
-        setShimmerState(false); // Stop shimmer when track ends
+        // setShimmerState(false); // Shimmer effect commented out
         currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
         loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
     });
