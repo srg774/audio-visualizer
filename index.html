@@ -442,6 +442,7 @@
                 isPlaying = true;
                 playPauseButton.innerHTML = pauseIconSVG;
                 drawVisualizer();
+                hasUserInitiatedPlayback = true;
                 setShimmerState(true);
                 trackPlayed(track.title);
             }).catch(error => {
@@ -566,6 +567,7 @@
     });
     // --- END NEW ---
 
+    // --- UPDATED: Optimized drawVisualizer function ---
     function drawVisualizer() {
         if (audioContext.state === 'running' && !audio.paused) {
             requestAnimationFrame(drawVisualizer);
@@ -576,15 +578,24 @@
             const centerY = canvas.height / 2;
             const radius = Math.min(centerX, centerY) * 0.6;
 
-            for (let i = 0; i < bufferLength; i++) {
-                const angle = (i / bufferLength) * 2 * Math.PI;
-                const barHeight = (dataArray[i] / 255) * radius * 0.8;
+            // Reduce the number of bars to improve performance
+            const numberOfBars = 60;
+            const step = Math.floor(bufferLength / numberOfBars);
+
+            for (let i = 0; i < numberOfBars; i++) {
+                const dataIndex = i * step;
+                const barHeight = (dataArray[dataIndex] / 255) * radius * 0.8;
+                const angle = (dataIndex / bufferLength) * 2 * Math.PI;
+
                 const x1 = centerX + Math.cos(angle) * radius;
                 const y1 = centerY + Math.sin(angle) * radius;
                 const x2 = centerX + Math.cos(angle) * (radius + barHeight);
                 const y2 = centerY + Math.sin(angle) * (radius + barHeight);
 
-                ctx.strokeStyle = `rgb(${dataArray[i]}, 50, 200)`;
+                // Make the color more dynamic
+                const hue = (dataArray[dataIndex] / 255) * 360;
+                ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+                
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
@@ -593,6 +604,7 @@
             }
         }
     }
+    // --- END UPDATED ---
 
     function trackPlayed(trackTitle) {
         if (window.goatcounter && hasUserInitiatedPlayback) {
