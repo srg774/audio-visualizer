@@ -336,6 +336,7 @@
     const playPauseButton = document.getElementById('play-pause-button');
     const prevButton = document.getElementById('prev-button');
     const nextButton = document.getElementById('next-button');
+    const seekBarContainer = document.querySelector('.seek-bar-container');
     const seekBar = document.getElementById('seek-bar');
     const seekBarProgress = document.getElementById('seek-bar-progress');
     const seekBarThumb = document.getElementById('seek-bar-thumb');
@@ -350,6 +351,10 @@
 
     let source;
     let audioSourceConnected = false;
+
+    // --- NEW: Variables for handling the seek bar drag state ---
+    let isSeeking = false;
+    // --- END NEW ---
 
     function ensureAudioContextAndSource() {
         if (audioContext.state === 'suspended') {
@@ -449,8 +454,10 @@
             isPlaying = false;
             audio.pause();
             playPauseButton.innerHTML = playIconSVG;
+            // --- NEW: Reset seek bar on new track load ---
             seekBarProgress.style.width = '0%';
             seekBarThumb.style.left = '0%'; 
+            // --- END NEW ---
             setShimmerState(false);
         }
     }
@@ -496,32 +503,68 @@
 
     audio.addEventListener('loadedmetadata', () => {
         if (!isNaN(audio.duration)) {
+            // --- NEW: Resetting here is redundant due to `loadTrack` but harmless ---
             seekBarProgress.style.width = '0%';
             seekBarThumb.style.left = '0%';
+            // --- END NEW ---
         }
     });
 
     audio.addEventListener('timeupdate', () => {
-        if (!isNaN(audio.duration)) {
+        // --- UPDATED: Only update the bar if the user isn't currently dragging it ---
+        if (!isNaN(audio.duration) && !isSeeking) {
             const progress = (audio.currentTime / audio.duration) * 100;
             seekBarProgress.style.width = `${progress}%`;
-            seekBarThumb.style.left = `${progress}%`; // Update thumb position with a simple percentage
+            seekBarThumb.style.left = `${progress}%`;
         }
     });
 
-    seekBar.addEventListener('click', (e) => {
+    // --- NEW: Event listeners for interactive seeking (click and drag) ---
+    function seek(e) {
         if (isNaN(audio.duration)) return;
 
         const rect = seekBar.getBoundingClientRect();
-        const clickPosition = e.clientX - rect.left;
-        const seekTime = (clickPosition / rect.width) * audio.duration;
+        let clickPosition = e.clientX - rect.left;
+
+        // Ensure the click position is within the bounds of the seek bar
+        clickPosition = Math.max(0, Math.min(clickPosition, rect.width));
+
+        const seekPercentage = (clickPosition / rect.width);
+        const seekTime = seekPercentage * audio.duration;
+
         audio.currentTime = seekTime;
         
+        // Visually update the seek bar and thumb as the user drags
+        seekBarProgress.style.width = `${seekPercentage * 100}%`;
+        seekBarThumb.style.left = `${seekPercentage * 100}%`;
+    }
+
+    seekBarContainer.addEventListener('mousedown', (e) => {
+        isSeeking = true;
+        // Don't prevent default, as we want the cursor to change, but handle our own logic
+        seek(e);
+        
         if (isPlaying || hasUserInitiatedPlayback) {
-            ensureAudioContextAndSource();
+            // Pause the audio briefly to prevent the timeupdate event from fighting with our drag updates
+            audio.pause();
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isSeeking) return;
+        seek(e);
+    });
+
+    window.addEventListener('mouseup', (e) => {
+        if (!isSeeking) return;
+        isSeeking = false;
+        
+        if (isPlaying || hasUserInitiatedPlayback) {
+            // Once the drag is over, resume playback from the new position
             audio.play().catch(error => console.warn("Seek-and-play prevented:", error));
         }
     });
+    // --- END NEW ---
 
     function drawVisualizer() {
         if (audioContext.state === 'running' && !audio.paused) {
