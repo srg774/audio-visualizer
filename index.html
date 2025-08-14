@@ -150,34 +150,42 @@
             height: 20px;
         }
 
-        /*
-         * --- UPDATED Seek bar styling for YouTube Music look ---
-         */
+        /* Seek bar styling */
         .seek-bar-container {
             width: 80%;
             display: block !important;
-            /* Thin line height */
+            /* The original height for the line */
             height: 3px !important;
             margin: 20px auto;
             position: relative;
         }
 
+        /* Hover state for the container */
+        .seek-bar-container:hover {
+            cursor: pointer;
+        }
+
         .seek-bar {
             width: 100%;
-            height: 100%;
-            /* Thin gray line */
-            background: #5a5a5a;
-            border-radius: 2px;
-            cursor: pointer;
+            /* The original background color */
+            background: #333;
+            border-radius: 6px;
             overflow: hidden;
             position: relative;
-            transition: height 0.2s ease-in-out; /* Smooth transition for hover effect */
+            /* Start with original height */
+            height: 100%;
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* The bar gets thicker on hover */
+        .seek-bar-container:hover .seek-bar {
+            height: 12px;
         }
 
         .seek-bar-progress {
             height: 100%;
-            /* Matching blue color */
-            background: #00bfff;
+            /* Restoring the original gradient background */
+            background: linear-gradient(90deg, #00f, #00bfff);
             width: 0%;
         }
 
@@ -185,28 +193,21 @@
             position: absolute;
             top: 50%;
             transform: translate(-50%, -50%);
-            /* Blue circular play head */
-            width: 12px;
-            height: 12px;
-            background: #00bfff;
+            width: 14px;
+            height: 14px;
+            background: white;
             border-radius: 50%;
             pointer-events: none;
-            /* Hidden until hover, like YT Music */
-            opacity: 0;
-            transition: opacity 0.2s ease-in-out;
+            transition: all 0.2s ease-in-out;
         }
 
-        /* Make the bar thicker and show the thumb on hover */
-        .seek-bar-container:hover .seek-bar {
-            height: 4px;
-        }
+        /* The thumb changes on hover */
         .seek-bar-container:hover .seek-bar-thumb {
-            opacity: 1;
+            width: 18px;
+            height: 18px;
+            /* Changing to the blue color on hover */
+            background: #00bfff;
         }
-        /*
-         * --- END UPDATED Seek bar styling ---
-         */
-
 
         /* Canvas visualizer styling */
         canvas {
