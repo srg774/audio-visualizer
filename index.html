@@ -178,27 +178,27 @@
         border-radius: 2px;
     }
 
-    .seek-bar-thumb {
-        position: absolute;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: 8px; /* Small dot size */
-        height: 8px;
-        background: white;
-        border-radius: 50%;
-        pointer-events: none; /* Allow clicks to pass through to seek-bar */
-        transition: width 0.1s ease, height 0.1s ease, background-color 0.1s ease, transform 0.1s ease; /* Smooth transition for hover effect */
-        left: 0; /* Set initial left position */
-    }
+/* Update the seek-bar-thumb styling */
+.seek-bar-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px; /* Small dot size */
+    height: 8px;
+    background: #00bfff; /* Set to the final color of your gradient */
+    border-radius: 50%;
+    pointer-events: none; /* Allow clicks to pass through to seek-bar */
+    transition: width 0.1s ease, height 0.1s ease, background-color 0.1s ease, transform 0.1s ease; /* Smooth transition for hover effect */
+    left: 0;
+}
 
-    /* NEW: Hover effect for the seek bar and thumb */
-    .seek-bar-container:hover .seek-bar-thumb {
-        width: 12px;
-        height: 12px;
-        /* Optional: Add a subtle glow on hover */
-        background-color: #ffffff;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-    }
+/* Update the hover effect for the seek bar and thumb */
+.seek-bar-container:hover .seek-bar-thumb {
+    width: 12px;
+    height: 12px;
+    background-color: #00bfff; /* Keep the same blue on hover */
+    box-shadow: 0 0 10px rgba(0, 191, 255, 0.6); /* Add a blue glow effect */
+}
 
     /* Canvas visualizer styling */
     canvas {
