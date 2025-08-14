@@ -150,54 +150,53 @@
         height: 20px;
     }
 
-    /* Seek bar styling */
-    .seek-bar-container {
-        width: 80%;
-        display: block !important;
-        height: 20px; /* Increased height for hover area */
-        margin: 20px auto;
-        position: relative;
-    }
+   /* Seek bar styling */
+.seek-bar-container {
+    width: 80%;
+    display: block !important;
+    height: 20px; /* Increased height for hover area */
+    margin: 20px auto;
+    position: relative;
+    /* Center the contents of the container */
+    display: flex;
+    align-items: center;
+}
 
-    .seek-bar {
-        width: 100%;
-        height: 4px; /* Thin line for the bar */
-        background: #555; /* Dark grey line */
-        border-radius: 2px; /* Smooth corners for the line */
-        cursor: pointer;
-        overflow: hidden;
-        position: absolute; /* Position relative to its container */
-        top: 50%;
-        transform: translateY(-50%); /* Vertically center the line */
-    }
+.seek-bar {
+    width: 100%;
+    height: 4px; /* Thin line for the base of the bar */
+    background: #555;
+    border-radius: 2px;
+    cursor: pointer;
+    overflow: visible; /* Changed to visible to show the thumb outside the bar */
+    position: relative; /* Set to relative for positioning inner elements */
+}
 
-    .seek-bar-progress {
-        height: 100%;
-        background: linear-gradient(90deg, #00f, #00bfff);
-        width: 0%;
-        border-radius: 2px;
-    }
+.seek-bar-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #00f, #00bfff);
+    width: 0%;
+    border-radius: 2px;
+}
 
-/* Update the seek-bar-thumb styling */
 .seek-bar-thumb {
     position: absolute;
-    top: 50%;
+    top: 50%; /* Vertically center the thumb */
     transform: translate(-50%, -50%);
-    width: 8px; /* Small dot size */
-    height: 8px;
-    background: #00bfff; /* Set to the final color of your gradient */
+    width: 12px; /* A larger size for the dot */
+    height: 12px;
+    background: #00bfff; /* Matches the gradient's end color */
     border-radius: 50%;
-    pointer-events: none; /* Allow clicks to pass through to seek-bar */
-    transition: width 0.1s ease, height 0.1s ease, background-color 0.1s ease, transform 0.1s ease; /* Smooth transition for hover effect */
+    pointer-events: none;
+    transition: width 0.1s ease, height 0.1s ease, transform 0.1s ease;
     left: 0;
 }
 
-/* Update the hover effect for the seek bar and thumb */
+/* NEW: Hover effect for the seek bar and thumb */
 .seek-bar-container:hover .seek-bar-thumb {
-    width: 12px;
-    height: 12px;
-    background-color: #00bfff; /* Keep the same blue on hover */
-    box-shadow: 0 0 10px rgba(0, 191, 255, 0.6); /* Add a blue glow effect */
+    width: 16px;
+    height: 16px;
+    box-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
 }
 
     /* Canvas visualizer styling */
