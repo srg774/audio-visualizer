@@ -23,274 +23,266 @@
             async src="//gc.zgo.at/count.js"></script>
 
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-color: #000; /* Fallback if image fails */
-            color: white;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden; /* Prevent scrollbars due to fixed background */
-            text-align: center;
-            position: relative; /* Needed for the ::before pseudo-element overlay */
-            z-index: 1; /* Ensures body content is above the overlay */
-        }
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-color: #000; /* Fallback if image fails */
+        color: white;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        overflow: hidden; /* Prevent scrollbars due to fixed background */
+        text-align: center;
+        position: relative; /* Needed for the ::before pseudo-element overlay */
+        z-index: 1; /* Ensures body content is above the overlay */
+    }
 
-        /* Semi-transparent overlay for better text readability */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity as needed */
-            z-index: -1; /* Places the overlay behind the body's content */
-        }
+    /* Semi-transparent overlay for better text readability */
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity as needed */
+        z-index: -1; /* Places the overlay behind the body's content */
+    }
 
-        h1 {
-            font-size: 0rem; /* Currently set to 0, so it's invisible */
-            margin-top: 20px;
-        }
+    h1 {
+        font-size: 0rem; /* Currently set to 0, so it's invisible */
+        margin-top: 20px;
+    }
 
-        h2 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-        }
-
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin: 20px auto; /* Centered with auto margins */
-            width: 80%;
-            max-width: 600px;
-            justify-content: center;
-            align-items: center;
-            position: relative; /* Needed for positioning elements within it */
-        }
-
-        /* Removed border and adjusted background for general control buttons */
-        .controls button {
-            background: none; /* Make background transparent by default */
-            border: none; /* Remove border entirely for these buttons */
-            color: white;
-            border-radius: 50%; /* Make them circular */
-            cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 50px; /* Set a fixed size for consistent circles */
-            height: 50px;
-            padding: 0; /* Remove padding as content is sized by SVG */
-        }
-
-        .controls button:hover {
-            background: rgba(255, 255, 255, 0.2); /* Subtle white circular highlight on hover */
-        }
-
-        /* The .icon-button class becomes primarily for sizing and centering SVGs */
-        .icon-button {
-            background: none;
-            border: none; /* Ensure no border */
-            color: white;
-            padding: 0; /* Ensure no padding affecting size */
-            border-radius: 50%; /* Default to circular for all icon buttons */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: background 0.3s; /* Only transition background */
-            width: 40px; /* Default size for smaller icon buttons like refresh */
-            height: 40px;
-        }
-
-        /* Specific sizing for the main control icons (prev, play/pause, next) */
-        .controls .icon-button {
-            width: 50px; /* Larger circular area for these */
-            height: 50px;
-            /* No border-radius override here, keep 50% for circular shape */
-        }
-
-        /* --- NEW RULE FOR PLAY/PAUSE BUTTON SIZE --- */
-        #play-pause-button {
-            width: 60px;  /* 20% larger than 50px */
-            height: 60px; /* 20% larger than 50px */
-        }
-
-        /* Adjust the SVG inside the larger play/pause button */
-        #play-pause-button svg {
-            width: 30px; /* Adjust SVG size for the larger button, approximately 20% larger than 24px */
-            height: 30px;
-        }
-        /* ------------------------------------------- */
+    h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
 
 
-        .controls .icon-button svg {
-            width: 24px; /* Larger icons for main controls (prev/next) */
-            height: 24px;
-        }
+    .controls {
+        display: flex;
+        gap: 15px;
+        margin: 20px auto; /* Centered with auto margins */
+        width: 80%;
+        max-width: 600px;
+        justify-content: center;
+        align-items: center;
+        position: relative; /* Needed for positioning elements within it */
+    }
+
+    /* Removed border and adjusted background for general control buttons */
+    .controls button {
+        background: none; /* Make background transparent by default */
+        border: none; /* Remove border entirely for these buttons */
+        color: white;
+        border-radius: 50%; /* Make them circular */
+        cursor: pointer;
+        transition: background 0.3s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50px; /* Set a fixed size for consistent circles */
+        height: 50px;
+        padding: 0; /* Remove padding as content is sized by SVG */
+    }
+
+    .controls button:hover {
+        background: rgba(255, 255, 255, 0.2); /* Subtle white circular highlight on hover */
+    }
+
+    /* The .icon-button class becomes primarily for sizing and centering SVGs */
+    .icon-button {
+        background: none;
+        border: none; /* Ensure no border */
+        color: white;
+        padding: 0; /* Ensure no padding affecting size */
+        border-radius: 50%; /* Default to circular for all icon buttons */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: background 0.3s; /* Only transition background */
+        width: 40px; /* Default size for smaller icon buttons like refresh */
+        height: 40px;
+    }
+
+    /* Specific sizing for the main control icons (prev, play/pause, next) */
+    .controls .icon-button {
+        width: 50px; /* Larger circular area for these */
+        height: 50px;
+        /* No border-radius override here, keep 50% for circular shape */
+    }
+
+    /* --- NEW RULE FOR PLAY/PAUSE BUTTON SIZE --- */
+    #play-pause-button {
+        width: 60px;  /* 20% larger than 50px */
+        height: 60px; /* 20% larger than 50px */
+    }
+
+    /* Adjust the SVG inside the larger play/pause button */
+    #play-pause-button svg {
+        width: 30px; /* Adjust SVG size for the larger button, approximately 20% larger than 24px */
+        height: 30px;
+    }
+    /* ------------------------------------------- */
 
 
-        /* No hover specific to .icon-button, inherited from .controls button:hover */
-        /* .icon-button:hover is now handled by .controls button:hover */
+    .controls .icon-button svg {
+        width: 24px; /* Larger icons for main controls (prev/next) */
+        height: 24px;
+    }
 
 
-        /* Base icon button SVG size (e.g. for the refresh button) */
-        .icon-button svg {
-            width: 20px;
-            height: 20px;
-        }
+    /* No hover specific to .icon-button, inherited from .controls button:hover */
+    /* .icon-button:hover is now handled by .controls button:hover */
 
-        /* Seek bar styling */
-        .seek-bar-container {
-            width: 80%;
-            display: block !important;
-            /* The original height for the line */
-            height: 3px !important;
-            margin: 20px auto;
-            position: relative;
-        }
 
-        /* Hover state for the container */
-        .seek-bar-container:hover {
-            cursor: pointer;
-        }
+    /* Base icon button SVG size (e.g. for the refresh button) */
+    .icon-button svg {
+        width: 20px;
+        height: 20px;
+    }
 
-        .seek-bar {
-            width: 100%;
-            /* The original background color */
-            background: #333;
-            border-radius: 6px;
-            overflow: hidden;
-            position: relative;
-            /* Start with original height */
-            height: 100%;
-            transition: all 0.2s ease-in-out;
-        }
+    /* Seek bar styling */
+    .seek-bar-container {
+        width: 80%;
+        display: block !important;
+        height: 20px; /* Increased height for hover area */
+        margin: 20px auto;
+        position: relative;
+    }
 
-        /* The bar gets thicker on hover */
-        .seek-bar-container:hover .seek-bar {
-            height: 12px;
-        }
+    .seek-bar {
+        width: 100%;
+        height: 4px; /* Thin line for the bar */
+        background: #555; /* Dark grey line */
+        border-radius: 2px; /* Smooth corners for the line */
+        cursor: pointer;
+        overflow: hidden;
+        position: absolute; /* Position relative to its container */
+        top: 50%;
+        transform: translateY(-50%); /* Vertically center the line */
+    }
 
-        .seek-bar-progress {
-            height: 100%;
-            /* Restoring the original gradient background */
-            background: linear-gradient(90deg, #00f, #00bfff);
-            width: 0%;
-        }
+    .seek-bar-progress {
+        height: 100%;
+        background: linear-gradient(90deg, #00f, #00bfff);
+        width: 0%;
+        border-radius: 2px;
+    }
 
-        .seek-bar-thumb {
-            position: absolute;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 14px;
-            height: 14px;
-            background: white;
-            border-radius: 50%;
-            pointer-events: none;
-            transition: all 0.2s ease-in-out;
-        }
+    .seek-bar-thumb {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 8px; /* Small dot size */
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+        pointer-events: none; /* Allow clicks to pass through to seek-bar */
+        transition: width 0.1s ease, height 0.1s ease, background-color 0.1s ease, transform 0.1s ease; /* Smooth transition for hover effect */
+        left: 0; /* Set initial left position */
+    }
 
-        /* The thumb changes on hover */
-        .seek-bar-container:hover .seek-bar-thumb {
-            width: 18px;
-            height: 18px;
-            /* Changing to the blue color on hover */
-            background: #00bfff;
-        }
+    /* NEW: Hover effect for the seek bar and thumb */
+    .seek-bar-container:hover .seek-bar-thumb {
+        width: 12px;
+        height: 12px;
+        /* Optional: Add a subtle glow on hover */
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+    }
 
-        /* Canvas visualizer styling */
-        canvas {
-            width: 100%;
-            height: 60vh;
-            background: transparent; /* Keep this transparent so your body background shows */
-        }
+    /* Canvas visualizer styling */
+    canvas {
+        width: 100%;
+        height: 60vh;
+        background: transparent; /* Keep this transparent so your body background shows */
+    }
 
-        /* Footer styling and refresh button positioning */
-        footer {
-            margin-top: auto; /* Pushes footer to the bottom */
-            padding: 10px;
-            position: relative; /* Make footer the positioning context for the button */
-            width: 100%; /* Ensure footer spans full width for consistent positioning */
-            display: flex; /* Flexbox for centering footer content */
-            justify-content: center; /* Center footer text */
-            align-items: center;
-        }
-        footer p {
-            margin: 0; /* Remove default paragraph margin */
-        }
+    /* Footer styling and refresh button positioning */
+    footer {
+        margin-top: auto; /* Pushes footer to the bottom */
+        padding: 10px;
+        position: relative; /* Make footer the positioning context for the button */
+        width: 100%; /* Ensure footer spans full width for consistent positioning */
+        display: flex; /* Flexbox for centering footer content */
+        justify-content: center; /* Center footer text */
+        align-items: center;
+    }
+    footer p {
+        margin: 0; /* Remove default paragraph margin */
+    }
 
-        /* Specific position for the refresh button (bottom-right within footer) */
-        .icon-button.bottom-right {
-            position: absolute;
-            bottom: 20px; /* Distance from bottom of footer */
-            right: 20px; /* Distance from right of footer */
-            margin: 0; /* Override any other margins */
+    /* Specific position for the refresh button (bottom-right within footer) */
+    .icon-button.bottom-right {
+        position: absolute;
+        bottom: 20px; /* Distance from bottom of footer */
+        right: 20px; /* Distance from right of footer */
+        margin: 0; /* Override any other margins */
 
-            /* Ensure it's circular and sized appropriately */
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            padding: 0; /* No padding, icon sizes it */
-        }
+        /* Ensure it's circular and sized appropriately */
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        padding: 0; /* No padding, icon sizes it */
+    }
 
-        /* Refresh button specific hover effect */
-        .icon-button.bottom-right:hover {
-            background: rgba(255, 255, 255, 0.2); /* Same circular highlight */
-        }
+    /* Refresh button specific hover effect */
+    .icon-button.bottom-right:hover {
+        background: rgba(255, 255, 255, 0.2); /* Same circular highlight */
+    }
 
-        /* Rainbow "NEW" tag styling */
-        .rainbow-new {
-            font-style: italic;
-            font-weight: bold;
-            margin-left: 10px;
-            background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: rainbow 3s linear infinite;
-            display: inline-block;
-        }
+    /* Rainbow "NEW" tag styling */
+    .rainbow-new {
+        font-style: italic;
+        font-weight: bold;
+        margin-left: 10px;
+        background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: rainbow 3s linear infinite;
+        display: inline-block;
+    }
 
-        @keyframes rainbow {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-        }
+    @keyframes rainbow {
+        0% { filter: hue-rotate(0deg); }
+        100% { filter: hue-rotate(360deg); }
+    }
 
-        /* Status message styling (for "New tracks added!" etc.) */
-        .status-message {
-            position: fixed; /* Fixed position relative to viewport */
-            /* Adjusted positioning to be above the refresh button area */
-            bottom: 80px; /* Approximately above the refresh button, adjust as needed */
-            left: 50%; /* Center horizontally */
-            transform: translateX(-50%); /* Adjust for true centering */
-            background-color: rgba(50, 50, 50, 0.9); /* Dark semi-transparent background */
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            opacity: 0; /* Start hidden */
-            visibility: hidden; /* Start hidden */
-            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
-            z-index: 1000; /* Ensure it's on top of other content */
-            font-size: 0.9rem;
-            white-space: nowrap; /* Prevent text wrapping */
-        }
+    /* Status message styling (for "New tracks added!" etc.) */
+    .status-message {
+        position: fixed; /* Fixed position relative to viewport */
+        /* Adjusted positioning to be above the refresh button area */
+        bottom: 80px; /* Approximately above the refresh button, adjust as needed */
+        left: 50%; /* Center horizontally */
+        transform: translateX(-50%); /* Adjust for true centering */
+        background-color: rgba(50, 50, 50, 0.9); /* Dark semi-transparent background */
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        opacity: 0; /* Start hidden */
+        visibility: hidden; /* Start hidden */
+        transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+        z-index: 1000; /* Ensure it's on top of other content */
+        font-size: 0.9rem;
+        white-space: nowrap; /* Prevent text wrapping */
+    }
 
-        .status-message.show {
-            opacity: 1;
-            visibility: visible;
-        }
-    </style>
+    .status-message.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+</style>
 </head>
 <body>
 
