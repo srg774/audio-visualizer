@@ -151,53 +151,53 @@
     }
 
    /* Seek bar styling */
-.seek-bar-container {
-    width: 80%;
-    display: block !important;
-    height: 20px; /* Increased height for hover area */
-    margin: 20px auto;
-    position: relative;
-    /* Center the contents of the container */
-    display: flex;
-    align-items: center;
-}
+    .seek-bar-container {
+        width: 80%;
+        display: block !important;
+        height: 20px; /* Increased height for hover area */
+        margin: 20px auto;
+        position: relative;
+        /* Center the contents of the container */
+        display: flex;
+        align-items: center;
+    }
 
-.seek-bar {
-    width: 100%;
-    height: 4px; /* Thin line for the base of the bar */
-    background: #555;
-    border-radius: 2px;
-    cursor: pointer;
-    overflow: visible; /* Changed to visible to show the thumb outside the bar */
-    position: relative; /* Set to relative for positioning inner elements */
-}
+    .seek-bar {
+        width: 100%;
+        height: 4px; /* Thin line for the base of the bar */
+        background: #555;
+        border-radius: 2px;
+        cursor: pointer;
+        overflow: visible; /* Changed to visible to show the thumb outside the bar */
+        position: relative; /* Set to relative for positioning inner elements */
+    }
 
-.seek-bar-progress {
-    height: 100%;
-    background: linear-gradient(90deg, #00f, #00bfff);
-    width: 0%;
-    border-radius: 2px;
-}
+    .seek-bar-progress {
+        height: 100%;
+        background: linear-gradient(90deg, #00f, #00bfff);
+        width: 0%;
+        border-radius: 2px;
+    }
 
-.seek-bar-thumb {
-    position: absolute;
-    top: 50%; /* Vertically center the thumb */
-    transform: translate(-50%, -50%);
-    width: 12px; /* A larger size for the dot */
-    height: 12px;
-    background: #00bfff; /* Matches the gradient's end color */
-    border-radius: 50%;
-    pointer-events: none;
-    transition: width 0.1s ease, height 0.1s ease, transform 0.1s ease;
-    left: 0;
-}
+    .seek-bar-thumb {
+        position: absolute;
+        top: 50%; /* Vertically center the thumb */
+        transform: translate(-50%, -50%);
+        width: 12px; /* A larger size for the dot */
+        height: 12px;
+        background: #00bfff; /* Matches the gradient's end color */
+        border-radius: 50%;
+        pointer-events: none;
+        transition: width 0.1s ease, height 0.1s ease, transform 0.1s ease;
+        left: 0;
+    }
 
-/* NEW: Hover effect for the seek bar and thumb */
-.seek-bar-container:hover .seek-bar-thumb {
-    width: 16px;
-    height: 16px;
-    box-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
-}
+    /* Hover effect for the seek bar and thumb */
+    .seek-bar-container:hover .seek-bar-thumb {
+        width: 16px;
+        height: 16px;
+        box-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
+    }
 
     /* Canvas visualizer styling */
     canvas {
@@ -528,38 +528,91 @@
         loadTrack(currentTrackIndex, hasUserInitiatedPlayback);
     });
 
-    // Seek Bar Logic: Listen for metadata to ensure duration is known, then update time
-    audio.addEventListener('loadedmetadata', () => {
-        if (!isNaN(audio.duration)) {
-            seekBarProgress.style.width = '0%';
-            const thumbPos = 0;
-            seekBarThumb.style.left = `${thumbPos}px`;
-        }
-    });
+    // --- NEW SEEK BAR LOGIC WITH DRAGGING ---
 
-    audio.addEventListener('timeupdate', () => {
+    // A flag to check if the user is currently dragging the seek bar thumb
+    let isDragging = false;
+
+    // Function to calculate and update the seek time and visual progress
+    function updateSeek(e) {
+        // Get the bounding rectangle of the seek bar to calculate relative position
+        const rect = seekBar.getBoundingClientRect();
+        // Calculate the mouse position relative to the start of the seek bar
+        const mouseX = e.clientX - rect.left;
+        // Calculate the new time based on the mouse position
+        const seekTime = (mouseX / rect.width) * audio.duration;
+
+        // Ensure the time is within the valid range (0 to duration)
         if (!isNaN(audio.duration)) {
-            const progress = (audio.currentTime / audio.duration) * 100;
+            audio.currentTime = Math.max(0, Math.min(seekTime, audio.duration));
+            
+            // If the audio is paused, we need to manually update the progress bar visually
+            // since the `timeupdate` event won't fire
+            if (audio.paused && !isPlaying) {
+                updateVisuals(audio.currentTime);
+            }
+        }
+    }
+
+    // Function to update the visual position of the seek bar progress and thumb
+    function updateVisuals(currentTime) {
+        if (!isNaN(audio.duration)) {
+            const progress = (currentTime / audio.duration) * 100;
             seekBarProgress.style.width = `${progress}%`;
+            
             const thumbWidth = seekBarThumb.offsetWidth;
             const seekBarWidth = seekBar.offsetWidth;
             const thumbPos = (progress / 100) * seekBarWidth;
             const adjustedThumbPos = Math.max(0, Math.min(seekBarWidth - thumbWidth / 2, thumbPos - (thumbWidth / 2)));
             seekBarThumb.style.left = `${adjustedThumbPos}px`;
         }
-    });
+    }
 
-    seekBar.addEventListener('click', (e) => {
-        if (isNaN(audio.duration)) return;
-
-        const rect = seekBar.getBoundingClientRect();
-        const seekTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-        audio.currentTime = seekTime;
-        if (isPlaying || hasUserInitiatedPlayback) {
-            ensureAudioContextAndSource();
-            audio.play().catch(error => console.warn("Seek-and-play prevented:", error));
+    // Listen for metadata to ensure duration is known
+    audio.addEventListener('loadedmetadata', () => {
+        if (!isNaN(audio.duration)) {
+            updateVisuals(0);
         }
     });
+
+    // Update the seek bar visuals as the track plays
+    audio.addEventListener('timeupdate', () => {
+        // Only update visuals if the user is not actively dragging
+        if (!isDragging) {
+            updateVisuals(audio.currentTime);
+        }
+    });
+
+    // Start dragging when the mouse is pressed down on the seek bar
+    seekBar.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        updateSeek(e); // Update position on initial click
+    });
+
+    // Handle the dragging motion
+    window.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            // Stop the default browser behavior of selecting text
+            e.preventDefault(); 
+            updateSeek(e);
+        }
+    });
+
+    // Stop dragging when the mouse is released anywhere on the window
+    window.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            
+            // Once dragging stops, if the user had already initiated playback, 
+            // make sure the audio is playing from the new position
+            if (hasUserInitiatedPlayback) {
+                audio.play().catch(error => console.warn("Seek-and-play prevented:", error));
+            }
+        }
+    });
+
+    // --- END NEW SEEK BAR LOGIC ---
+
 
     // Visualizer drawing function
     function drawVisualizer() {
