@@ -142,32 +142,18 @@
         height: 20px;
     }
 
-Coding partner
-Thanks for clarifying! I understand now. You don't want a glow around the whole button; you want a glow that follows the exact shape of the SVG icon, like the outline of the triangle for the play button.
-
-This is a great request because it's a perfect use case for the CSS drop-shadow() filter. My apologies for changing it to box-shadow in my last response. The box-shadow property creates a shadow around the element's box model, which is why you got the circular effect. The drop-shadow() filter, however, works on the non-transparent parts of an element, which is exactly what you need for an SVG.
-
-The good news is that your original CSS was very close to correct. The only problem was the values for the filter were a bit too subtle. Let's adjust them to make the glow much more visible.
-
-Overview of the Solution
-Revert the change: We'll go back to using the filter: drop-shadow() property.
-
-Adjust the values: We will increase the blur and spread of the shadow to make it more pronounced.
-
-Add a smooth transition: We'll ensure the transition is still in place to make the effect fade in and out nicely.
-
-The Code and Implementation Instructions
-You only need to change one part of your CSS. Copy and paste the code below to replace the CSS I gave you in the previous response.
-
-CSS
-
-/* --- START of the NEW/UPDATED CSS for the glow effect --- */
-/* Glowing effect on click for all control buttons */
-.controls button:active, .icon-button:active {
-    /* Adjusting the drop-shadow filter for a more noticeable glow */
-    filter: drop-shadow(0 0 10px var(--primary-color));
-    transition: filter 0.2s ease-in-out;
-}
+    /* --- START of the NEW/UPDATED CSS for the glow effect --- */
+    /* New glowing effect on click for all control buttons */
+    .controls button:active, .icon-button:active {
+        box-shadow: 0 0 20px 5px var(--primary-color);
+        transition: box-shadow 0.2s ease-in-out;
+    }
+    /* Optional: Add a subtle effect on hover too */
+    .controls button:hover, .icon-button:hover {
+        box-shadow: 0 0 10px 2px rgba(0, 191, 255, 0.4);
+        transition: box-shadow 0.2s ease-in-out;
+    }
+    /* --- END of the NEW/UPDATED CSS --- */
 
     /* Seek bar styling */
     .seek-bar-container {
