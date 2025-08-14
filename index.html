@@ -142,12 +142,18 @@
         height: 20px;
     }
 
-/* Click effect on all button icons */
-.controls button:active svg, .icon-button:active svg {
-    /* This filter adds a subtle glow effect around the SVG's outline */
-    filter: drop-shadow(0 0 30px var(--primary-color));
-    transition: filter 1.0s ease-out; /* The transition for the glow */
-}
+    /* --- START of the NEW/UPDATED CSS for the glow effect --- */
+    /* New glowing effect on click for all control buttons */
+    .controls button:active, .icon-button:active {
+        box-shadow: 0 0 20px 5px var(--primary-color);
+        transition: box-shadow 0.2s ease-in-out;
+    }
+    /* Optional: Add a subtle effect on hover too */
+    .controls button:hover, .icon-button:hover {
+        box-shadow: 0 0 10px 2px rgba(0, 191, 255, 0.4);
+        transition: box-shadow 0.2s ease-in-out;
+    }
+    /* --- END of the NEW/UPDATED CSS --- */
 
     /* Seek bar styling */
     .seek-bar-container {
