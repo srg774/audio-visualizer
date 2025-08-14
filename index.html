@@ -567,10 +567,13 @@
     });
     // --- END NEW ---
 
-    // --- UPDATED: Optimized drawVisualizer function ---
-    function drawVisualizer() {
+function drawVisualizer() {
         if (audioContext.state === 'running' && !audio.paused) {
-            requestAnimationFrame(drawVisualizer);
+            // Check if the audio is playing before requesting the next frame
+            if (isPlaying) {
+                requestAnimationFrame(drawVisualizer);
+            }
+            
             analyser.getByteFrequencyData(dataArray);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -578,7 +581,6 @@
             const centerY = canvas.height / 2;
             const radius = Math.min(centerX, centerY) * 0.6;
 
-            // Reduce the number of bars to improve performance
             const numberOfBars = 60;
             const step = Math.floor(bufferLength / numberOfBars);
 
@@ -592,7 +594,6 @@
                 const x2 = centerX + Math.cos(angle) * (radius + barHeight);
                 const y2 = centerY + Math.sin(angle) * (radius + barHeight);
 
-                // Make the color more dynamic
                 const hue = (dataArray[dataIndex] / 255) * 360;
                 ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
                 
