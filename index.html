@@ -111,7 +111,7 @@
         color: var(--text-color);
         border-radius: 50%;
         cursor: pointer;
-        transition: background 0.3s;
+        transition: all 0.3s;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -120,10 +120,6 @@
         padding: 0;
         position: relative;
         overflow: hidden;
-    }
-
-    .controls button:hover, .icon-button:hover {
-        background: var(--button-hover-color);
     }
     
     /* Play/Pause Button Specifics */
@@ -146,12 +142,12 @@
         height: 20px;
     }
 
-/* Click effect on all button icons */
-.controls button:active svg, .icon-button:active svg {
-    /* This filter adds a subtle glow effect around the SVG's outline */
-    filter: drop-shadow(0 0 5px var(--primary-color));
-    transition: filter 0.1s ease-out; /* The transition for the glow */
-}
+    /* Click effect on all button icons */
+    .controls button:active svg, .icon-button:active svg {
+        /* This filter adds a subtle glow effect around the SVG's outline */
+        filter: drop-shadow(0 0 5px var(--primary-color));
+        transition: filter 0.1s ease-out; /* The transition for the glow */
+    }
 
     /* Seek bar styling */
     .seek-bar-container {
