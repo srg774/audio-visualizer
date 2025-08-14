@@ -273,7 +273,7 @@
         visibility: visible;
     }
 
-</style>
+    </style>
 </head>
 <body>
 
@@ -352,7 +352,7 @@
     let source;
     let audioSourceConnected = false;
 
-    // --- NEW: Variables for handling the seek bar drag state ---
+    // --- NEW: A flag to prevent visualizer updates during seeking ---
     let isSeeking = false;
     // --- END NEW ---
 
@@ -539,12 +539,12 @@
         seekBarThumb.style.left = `${seekPercentage * 100}%`;
     }
 
-    seekBarContainer.addEventListener('mousedown', (e) => {
+    seekBar.addEventListener('mousedown', (e) => {
         isSeeking = true;
         // Don't prevent default, as we want the cursor to change, but handle our own logic
         seek(e);
         
-        if (isPlaying || hasUserInitiatedPlayback) {
+        if (isPlaying) {
             // Pause the audio briefly to prevent the timeupdate event from fighting with our drag updates
             audio.pause();
         }
@@ -559,15 +559,16 @@
         if (!isSeeking) return;
         isSeeking = false;
         
-        if (isPlaying || hasUserInitiatedPlayback) {
+        if (isPlaying) {
             // Once the drag is over, resume playback from the new position
             audio.play().catch(error => console.warn("Seek-and-play prevented:", error));
         }
     });
     // --- END NEW ---
 
+    // --- UPDATED: The visualizer function now checks for the isSeeking flag ---
     function drawVisualizer() {
-        if (audioContext.state === 'running' && !audio.paused) {
+        if (audioContext.state === 'running' && !audio.paused && !isSeeking) {
             requestAnimationFrame(drawVisualizer);
             analyser.getByteFrequencyData(dataArray);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -591,8 +592,12 @@
                 ctx.lineTo(x2, y2);
                 ctx.stroke();
             }
+        } else if (audioContext.state === 'running' && !audio.paused && isSeeking) {
+            // Keep the animation loop running, but don't draw anything
+            requestAnimationFrame(drawVisualizer);
         }
     }
+    // --- END UPDATED ---
 
     function trackPlayed(trackTitle) {
         if (window.goatcounter && hasUserInitiatedPlayback) {
