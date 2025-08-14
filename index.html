@@ -1,3 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SRG774 Music</title>
+
+    <meta property="og:title" content="srg774's Music"/>
+    <meta property="og:description" content="Showcasing my original tracks"/>
+    <meta property="og:image" content="assets/android-chrome-512x512.png"/>
+    <meta property="og:url" content="https://srg774.github.io/audio-visualizer/"/>
+    <meta property="og:type" content="website"/>
+
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+    <link rel="icon" type="type/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="shortcut icon" href="assets/favicon/favicon.ico">
+    <link rel="apple-touch-icon" href="assets/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+
+    <script data-goatcounter="https://srg774.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <style>
+    :root {
+        --primary-color: #00bfff;
+        --secondary-color: #00f;
+        --text-color: white;
+        --background-color: #000;
+        --overlay-color: rgba(0, 0, 0, 0.5);
+        --button-hover-color: rgba(255, 255, 255, 0.2);
+        --seek-bar-bg: #555;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        overflow: hidden;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--overlay-color);
+        z-index: -1;
+    }
+    
+    h1 {
+        font-size: 0rem;
+        margin-top: 20px;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        transition: color 0.5s ease-in-out; 
+    }
+
+    .shimmer-effect {
+        background: linear-gradient(to right, #ffffff, #87ceeb, #ffffff);
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 2s infinite linear;
+    }
+
+    @keyframes shimmer {
+        from {
+            background-position: 200% 0;
+        }
+        to {
+            background-position: -200% 0;
+        }
+    }
+
+
+    .controls {
+        display: flex;
+        gap: 15px;
+        margin: 20px auto;
+        width: 80%;
+        max-width: 600px;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    /* Base button style for all controls */
+    .controls button, .icon-button {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50px;
+        height: 50px;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Play/Pause Button Specifics */
+    #play-pause-button {
+        width: 60px;
+        height: 60px;
+    }
+    #play-pause-button svg {
+        width: 30px;
+        height: 30px;
+    }
+    
+    /* General icon size for other controls */
+    .controls .icon-button svg {
+        width: 24px;
+        height: 24px;
+    }
+    .icon-button svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* --- START of the NEW/UPDATED CSS for the glow effect --- */
+    /* New glowing effect on click for all control buttons */
+    .controls button:active, .icon-button:active {
+        box-shadow: 0 0 20px 5px var(--primary-color);
+        transition: box-shadow 0.2s ease-in-out;
+    }
+    /* Optional: Add a subtle effect on hover too */
+    .controls button:hover, .icon-button:hover {
+        box-shadow: 0 0 10px 2px rgba(0, 191, 255, 0.4);
+        transition: box-shadow 0.2s ease-in-out;
+    }
+    /* --- END of the NEW/UPDATED CSS --- */
+
+    /* Seek bar styling */
+    .seek-bar-container {
+        width: 80%;
+        height: 20px;
+        margin: 20px auto;
+        position: relative;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .seek-bar {
+        width: 100%;
+        height: 4px;
+        background: var(--seek-bar-bg);
+        border-radius: 2px;
+        overflow: visible;
+        position: relative;
+    }
+
+    .seek-bar-progress {
+        height: 100%;
+        background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+        width: 0%;
+        border-radius: 2px;
+        transition: width 0.1s linear;
+    }
+
+    .seek-bar-thumb {
+        position: absolute;
+        top: 50%;
+        /* We are using a percentage for `left` now, but this transform keeps the thumb centered on that point */
+        transform: translate(-50%, -50%);
+        width: 12px;
+        height: 12px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        pointer-events: none;
+        transition: all 0.1s ease-in-out;
+        left: 0;
+    }
+    
+    .seek-bar-container:hover .seek-bar-thumb {
+        width: 16px;
+        height: 16px;
+        box-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
+    }
+
+    canvas {
+        width: 100%;
+        height: 60vh;
+        background: transparent;
+    }
+
+    footer {
+        margin-top: auto;
+        padding: 10px;
+        position: relative;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    footer p {
+        margin: 0;
+    }
+
+    .icon-button.bottom-right {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        margin: 0;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+    }
+    
+    .rainbow-new {
+        font-style: italic;
+        font-weight: bold;
+        margin-left: 10px;
+        background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: rainbow 3s linear infinite;
+        display: inline-block;
+    }
+
+    @keyframes rainbow {
+        0% { filter: hue-rotate(0deg); }
+        100% { filter: hue-rotate(360deg); }
+    }
+
+    .status-message {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(50, 50, 50, 0.9);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+        z-index: 1000;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+
+    .status-message.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+</style>
+</head>
+<body>
+
+    <h1>SRG774 &copy;</h1>
+
+    <h2 id="current-track-display"></h2>
+
+    <div class="controls">
+        <button id="prev-button" class="icon-button" aria-label="Previous Track">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                <line x1="5" y1="19" x2="5" y2="5"></line>
+            </svg>
+        </button>
+        <button id="play-pause-button" class="icon-button" aria-label="Play/Pause">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+        </button>
+        <button id="next-button" class="icon-button" aria-label="Next Track">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                <line x1="19" y1="5" x2="19" y2="19"></line>
+            </svg>
+        </button>
+    </div>
+
+    <div class="seek-bar-container">
+        <div class="seek-bar" id="seek-bar">
+            <div class="seek-bar-progress" id="seek-bar-progress"></div>
+            <div class="seek-bar-thumb" id="seek-bar-thumb"></div>
+        </div>
+    </div>
+
+    <audio id="audio"></audio>
+
+    <canvas id="visualizer"></canvas>
+
+    <footer>
+        <p>SRG774 &copy;</p>
+        <button id="refresh-tracks-button" class="icon-button bottom-right" aria-label="Refresh Track List">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6"></path>
+                <path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.32L23 10M1 14l4.64 4.32A9 9 0 0 0 20.49 15"></path>
+            </svg>
+        </button>
+    </footer>
+
+    <div id="status-message" class="status-message"></div>
+
 <script>
     let tracks = [];
     let currentTrackIndex = 0;
@@ -392,3 +719,6 @@
 
     window.addEventListener('resize', resizeCanvas);
 </script>
+
+</body>
+</html>
