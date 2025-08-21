@@ -399,7 +399,7 @@
         if (isActive) {
             currentTrackDisplay.innerHTML = `<span class="shimmer-effect">${trackTitleText}</span>`;
             if (tracks[currentTrackIndex]?.isNew) {
-                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW</span>`;
+                currentTrackDisplay.innerHTML += `<span class="rainbow-new">NEW&nbsp</span>`;
             }
         } else {
             currentTrackDisplay.textContent = trackTitleText;
