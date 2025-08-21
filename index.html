@@ -65,14 +65,9 @@
     }
     
     h1 {
-        font-size: 0rem;
-        margin-top: 20px;
-    }
-
-    h2 {
         font-size: 1.5rem;
         margin-bottom: 20px;
-        transition: color 0.5s ease-in-out; 
+        transition: color 0.5s ease-in-out;
     }
 
     .shimmer-effect {
@@ -277,9 +272,7 @@
 </head>
 <body>
 
-    <h1>SRG774 &copy;</h1>
-
-    <h2 id="current-track-display"></h2>
+    <h1 id="current-track-display"></h1>
 
     <div class="controls">
         <button id="prev-button" class="icon-button" aria-label="Previous Track">
@@ -330,6 +323,7 @@
     let currentTrackIndex = 0;
     let isPlaying = false;
     let hasUserInitiatedPlayback = false;
+    let animationFrameId;
 
     const audio = document.getElementById('audio');
     const currentTrackDisplay = document.getElementById('current-track-display');
@@ -351,10 +345,8 @@
 
     let source;
     let audioSourceConnected = false;
-
-    // --- NEW: Variables for handling the seek bar drag state ---
     let isSeeking = false;
-    // --- END NEW ---
+    let wasPlayingBeforeSeek = false;
 
     function ensureAudioContextAndSource() {
         if (audioContext.state === 'suspended') {
@@ -436,13 +428,11 @@
         setShimmerState(false);
         updateMediaSession();
 
-        if (shouldAutoPlay && hasUserInitiatedPlayback) {
-            ensureAudioContextAndSource();
+        if (shouldAutoPlay) {
             audio.play().then(() => {
                 isPlaying = true;
                 playPauseButton.innerHTML = pauseIconSVG;
                 drawVisualizer();
-                hasUserInitiatedPlayback = true;
                 setShimmerState(true);
                 trackPlayed(track.title);
             }).catch(error => {
@@ -455,16 +445,15 @@
             isPlaying = false;
             audio.pause();
             playPauseButton.innerHTML = playIconSVG;
-            // --- NEW: Reset seek bar on new track load ---
             seekBarProgress.style.width = '0%';
-            seekBarThumb.style.left = '0%'; 
-            // --- END NEW ---
+            seekBarThumb.style.left = '0%';
             setShimmerState(false);
         }
     }
 
     function togglePlayback() {
-        if (!audioSourceConnected) {
+        if (!hasUserInitiatedPlayback) {
+            hasUserInitiatedPlayback = true;
             ensureAudioContextAndSource();
         }
 
@@ -473,7 +462,6 @@
                 isPlaying = true;
                 playPauseButton.innerHTML = pauseIconSVG;
                 drawVisualizer();
-                hasUserInitiatedPlayback = true;
                 setShimmerState(true);
                 trackPlayed(tracks[currentTrackIndex]?.title);
             }).catch(error => {
@@ -504,15 +492,12 @@
 
     audio.addEventListener('loadedmetadata', () => {
         if (!isNaN(audio.duration)) {
-            // --- NEW: Resetting here is redundant due to `loadTrack` but harmless ---
             seekBarProgress.style.width = '0%';
             seekBarThumb.style.left = '0%';
-            // --- END NEW ---
         }
     });
 
     audio.addEventListener('timeupdate', () => {
-        // --- UPDATED: Only update the bar if the user isn't currently dragging it ---
         if (!isNaN(audio.duration) && !isSeeking) {
             const progress = (audio.currentTime / audio.duration) * 100;
             seekBarProgress.style.width = `${progress}%`;
@@ -520,14 +505,12 @@
         }
     });
 
-    // --- NEW: Event listeners for interactive seeking (click and drag) ---
     function seek(e) {
         if (isNaN(audio.duration)) return;
 
         const rect = seekBar.getBoundingClientRect();
         let clickPosition = e.clientX - rect.left;
 
-        // Ensure the click position is within the bounds of the seek bar
         clickPosition = Math.max(0, Math.min(clickPosition, rect.width));
 
         const seekPercentage = (clickPosition / rect.width);
@@ -535,18 +518,16 @@
 
         audio.currentTime = seekTime;
         
-        // Visually update the seek bar and thumb as the user drags
         seekBarProgress.style.width = `${seekPercentage * 100}%`;
         seekBarThumb.style.left = `${seekPercentage * 100}%`;
     }
 
     seekBarContainer.addEventListener('mousedown', (e) => {
         isSeeking = true;
-        // Don't prevent default, as we want the cursor to change, but handle our own logic
+        wasPlayingBeforeSeek = isPlaying;
         seek(e);
         
         if (isPlaying || hasUserInitiatedPlayback) {
-            // Pause the audio briefly to prevent the timeupdate event from fighting with our drag updates
             audio.pause();
         }
     });
@@ -560,52 +541,51 @@
         if (!isSeeking) return;
         isSeeking = false;
         
-        if (isPlaying || hasUserInitiatedPlayback) {
-            // Once the drag is over, resume playback from the new position
-            audio.play().catch(error => console.warn("Seek-and-play prevented:", error));
+        if (wasPlayingBeforeSeek || isPlaying) {
+            audio.play().then(() => {
+                drawVisualizer();
+            }).catch(error => console.warn("Seek-and-play prevented:", error));
         }
     });
-    // --- END NEW ---
 
-function drawVisualizer() {
-        if (audioContext.state === 'running' && !audio.paused) {
-            // Check if the audio is playing before requesting the next frame
-            if (isPlaying) {
-                requestAnimationFrame(drawVisualizer);
-            }
+    function drawVisualizer() {
+        if (!isPlaying) {
+            cancelAnimationFrame(animationFrameId);
+            return;
+        }
+        
+        animationFrameId = requestAnimationFrame(drawVisualizer);
+        
+        analyser.getByteFrequencyData(dataArray);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) * 0.6;
+
+        const numberOfBars = 60;
+        const step = Math.floor(bufferLength / numberOfBars);
+
+        for (let i = 0; i < numberOfBars; i++) {
+            const dataIndex = i * step;
+            const barHeight = (dataArray[dataIndex] / 255) * radius * 0.8;
+            const angle = (dataIndex / bufferLength) * 2 * Math.PI;
+
+            const x1 = centerX + Math.cos(angle) * radius;
+            const y1 = centerY + Math.sin(angle) * radius;
+            const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+            const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+
+            const hue = (dataArray[dataIndex] / 255) * 360;
+            ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
             
-            analyser.getByteFrequencyData(dataArray);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = Math.min(centerX, centerY) * 0.6;
-
-            const numberOfBars = 60;
-            const step = Math.floor(bufferLength / numberOfBars);
-
-            for (let i = 0; i < numberOfBars; i++) {
-                const dataIndex = i * step;
-                const barHeight = (dataArray[dataIndex] / 255) * radius * 0.8;
-                const angle = (dataIndex / bufferLength) * 2 * Math.PI;
-
-                const x1 = centerX + Math.cos(angle) * radius;
-                const y1 = centerY + Math.sin(angle) * radius;
-                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
-                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
-
-                const hue = (dataArray[dataIndex] / 255) * 360;
-                ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
-                
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-            }
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
         }
     }
-    // --- END UPDATED ---
 
     function trackPlayed(trackTitle) {
         if (window.goatcounter && hasUserInitiatedPlayback) {
