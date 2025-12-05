@@ -1,5 +1,5 @@
 [
-    { "title": "Caged", "src": "assets/Caged.mp3", "isNew": true },
+    { "title": "Caged", "src": "assets/Caged.wav", "isNew": true },
     { "title": "Storm", "src": "assets/Storm3.mp3" },
      { "title": "Horizon", "src": "assets/Horizon6.mp3" },
      { "title": "Stable", "src": "assets/STABLE.mp3" },
