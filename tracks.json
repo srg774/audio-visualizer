@@ -1,6 +1,7 @@
 [
-    { "title": "Dream", "src": "assets/Dream.wav", "isNew": true },
-    { "title": "Storm", "src": "assets/Caged.wav" },
+    { "title": "Vektor", "src": "assets/Vector.wav", "isNew": true },
+    { "title": "Dream", "src": "assets/Dream.wav" },
+    { "title": "Caged", "src": "assets/Caged.wav" },
      { "title": "Horizon", "src": "assets/Horizon6.mp3" },
      { "title": "Stable", "src": "assets/STABLE.mp3" },
     { "title": "Michael", "src": "assets/Michael2.wav" },
