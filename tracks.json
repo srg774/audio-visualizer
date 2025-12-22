@@ -1,10 +1,7 @@
 [
-    { "title": "Interlude", "src": "assets/Interlude.mp3", "isNew": true },
-    { "title": "Vektor", "src": "assets/Vector.wav" },
-    { "title": "Dream", "src": "assets/Dream.wav" },
-    { "title": "Caged", "src": "assets/Caged.wav" },
+    { "title": "Requiem", "src": "assets/Requiem.mp3", "isNew": true },
+    { "title": "Interlude", "src": "assets/Interlude.mp3" },
      { "title": "Horizon", "src": "assets/Horizon6.mp3" },
-     { "title": "Stable", "src": "assets/STABLE.mp3" },
     { "title": "Michael", "src": "assets/Michael2.wav" },
     { "title": "Synthétique", "src": "assets/nuhouse21.mp3" }  
 ]
