@@ -1,47 +1,51 @@
 # SRG774 Web Audio Player
 
-https://srg774.github.io/audio-visualizer/
+[View the Live Site](https://srg774.github.io/audio-visualizer/)
 
 This project is a web-based audio player featuring a custom interface with a built-in visualizer and track controls. I designed it to allow users to play, pause, and switch between tracks, complete with a visually appealing frequency bar that reacts to the music. It also includes a custom seek bar for easy navigation.
 
 This player is an ongoing personal project of discovery, where I'm constantly creating and learning about electronic music production and mixing within a basic, Ableton-based home setup.
 
-![Screenshot of Music Player](https://github.com/srg774/audio-visualizer/blob/main/assets/Screenshot%202025-07-26%2009.35.35.png?raw=true)
+![Screenshot of Music Player](assets/Screenshot%202026-01-12%2018.11.00.png)
 
 ---
 
 ## Features
 
-* Play, pause, and skip tracks.
-* Real-time audio frequency visualizer.
-* Custom seek bar with progress indication.
-* Responsive design for mobile and desktop.
-
----
-
-## Technologies
-
-* HTML5, CSS3, JavaScript
-* Web Audio API for real-time audio visualization
-* Flexbox for responsive layout
+* **Visualizer:** Real-time audio frequency bars using the Web Audio API.
+* **Smart Controls:** Sleek icon-based interface with a large, intuitive Play/Pause toggle.
+* **Media Session API:** Full Bluetooth and Lock Screen control (skip/pause from your car or headphones).
+* **PWA Enabled:** Supports **offline playback** and "Add to Home Screen" via Service Workers.
+* **Responsive:** Optimized for both desktop monitors and mobile devices.
 
 ---
 
 ## Latest Updates
 
-Here are the most recent improvements I've made to the player:
+* **Bluetooth Media Control:** Seamless track navigation using connected hardware controls.
+* **Offline Playback:** Service Worker integration ensures the music doesn't stop even when the signal does.
+* **Shimmer Interface:** Replaced static text with a dynamic, shimmering "Now Playing" title.
+* **Iconic UI:** Swapped text buttons for modern SVG icons and a centralized "Big Play" button.
+* **Smart Refresh:** Added a track check/refresh button to sync the latest uploads without a full page reload.
+* **Optimized Audio:** Improved compression for faster loading and fixed play/pause logic for better reliability.
 
-* **Bluetooth Media Control:** I've added Bluetooth media control functionality, allowing you to seamlessly skip tracks, play/pause, and navigate audio using car controls or other connected devices.
-* **Offline Playback:** The music player now supports full **offline playback** thanks to a Service Worker.
-* **Interface Streamlining:** I've streamlined the interface by replacing the simple "Now Playing" text with the track title itself, now enhanced with a subtle, engaging shimmer effect when music is playing.
-* **Iconic Controls:** All the traditional text buttons for play, pause, next, and previous tracks have been swapped out for sleek, intuitive icons, offering a much cleaner and more modern look. I even made the play/pause button slightly larger to stand out!
-* **Track Refresh:** To keep your music library always up-to-date, I've introduced a clever track check and refresh button, so any new additions are seamlessly integrated, all while maintaining the cool visualizer and smooth seek bar experience you already enjoy.
-* **Track Updates & Fixes:** The player now includes the latest tracks, marked with 'NEW'. I've also applied improved compression and audio enhancements, and fixed the pause/play logic for a more intuitive experience.
+---
+
+## Google Sites Integration (Mini Player)
+
+This repository also hosts a "Lite" version designed specifically to be embedded into Google Sites as a header or footer bar. It fetches data directly from the main `tracks.json` to stay synced.
+
+* **Lite URL:** `https://srg774.github.io/audio-visualizer/lite.html`
 
 ---
 
 ## New Track Insert Format
 
-To add new tracks, use the following format:
+To add new tracks to the library, add an entry to the `tracks.json` file:
 
-`{ title: "New Track Name", src: "assets/newtrack.mp3" }`
+```json
+{ 
+  "title": "New Track Name", 
+  "src": "assets/newtrack.mp3",
+  "isNew": true 
+}
