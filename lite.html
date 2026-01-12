@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SRG774 Music - Lite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+    <script data-goatcounter="https://srg774.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #00bfff;
+            --secondary-color: #00f;
+            --text-color: white;
+            --background-color: #000;
+            --overlay-color: rgba(0, 0, 0, 0.5);
+            --seek-bar-bg: #555;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        /* Essential UI only */
+        h1 { font-size: 1.5rem; margin-bottom: 20px; min-height: 2.5rem; }
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; }
+        
+        .icon-button {
+            background: none; border: none; color: var(--text-color);
+            cursor: pointer; width: 50px; height: 50px;
+            display: flex; justify-content: center; align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .icon-button:active { transform: scale(0.9); color: var(--primary-color); }
+
+        .seek-bar-container { width: 80%; max-width: 500px; height: 20px; margin: 20px auto; cursor: pointer; }
+        .seek-bar { width: 100%; height: 6px; background: var(--seek-bar-bg); border-radius: 3px; position: relative; }
+        .seek-bar-progress { height: 100%; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color)); width: 0%; border-radius: 3px; }
+
+        /* Shimmer and Rainbow effects kept as they are lightweight CSS */
+        .shimmer-effect {
+            background: linear-gradient(to right, #ffffff, #87ceeb, #ffffff);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 2s infinite linear;
+        }
+        @keyframes shimmer { from {background-position: 200% 0;} to {background-position: -200% 0;} }
+        
+        footer { margin-top: 20px; font-size: 0.8rem; opacity: 0.7; }
+        .status-message { position: fixed; bottom: 20px; background: #333; padding: 8px 15px; border-radius: 5px; display: none; }
+        .status-message.show { display: block; }
+    </style>
+</head>
+<body>
+
+    <h1 id="current-track-display">Loading...</h1>
+
+    <div class="controls">
+        <button id="prev-button" class="icon-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        </button>
+        <button id="play-pause-button" class="icon-button">
+            <svg id="play-icon" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button id="next-button" class="icon-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+    </div>
+
+    <div class="seek-bar-container" id="seek-container">
+        <div class="seek-bar">
+            <div class="seek-bar-progress" id="seek-bar-progress"></div>
+        </div>
+    </div>
+
+    <audio id="audio" preload="metadata"></audio>
+
+    <footer>
+        <p>SRG774 © | <button id="refresh-tracks-button" style="background:none; border:none; color:cyan; cursor:pointer;">Refresh</button></p>
+    </footer>
+
+    <div id="status-message" class="status-message"></div>
+
+<script>
+    let tracks = [];
+    let currentTrackIndex = 0;
+    const audio = document.getElementById('audio');
+    const playPauseBtn = document.getElementById('play-pause-button');
+    const trackDisplay = document.getElementById('current-track-display');
+    const progressBar = document.getElementById('seek-bar-progress');
+    const statusMsg = document.getElementById('status-message');
+
+    const pauseSVG = '<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+    const playSVG = '<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+
+    async function fetchTracks() {
+        try {
+            const res = await fetch('tracks.json');
+            tracks = await res.json();
+            if (tracks.length > 0) loadTrack(0);
+        } catch (e) { showMsg("Error loading playlist"); }
+    }
+
+    function loadTrack(index) {
+        currentTrackIndex = index;
+        const track = tracks[index];
+        audio.src = track.src;
+        trackDisplay.innerHTML = `<span class="shimmer-effect">${track.title}</span>`;
+        if (track.isNew) trackDisplay.innerHTML += ' <small style="color:gold">NEW</small>';
+        
+        // Media Session (for Lock Screen controls)
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({ title: track.title, artist: 'SRG774' });
+        }
+    }
+
+    function togglePlay() {
+        if (audio.paused) {
+            audio.play();
+            playPauseBtn.innerHTML = pauseSVG;
+        } else {
+            audio.pause();
+            playPauseBtn.innerHTML = playSVG;
+        }
+    }
+
+    // Handlers
+    playPauseBtn.onclick = togglePlay;
+    document.getElementById('next-button').onclick = () => loadTrack((currentTrackIndex + 1) % tracks.length) || audio.play();
+    document.getElementById('prev-button').onclick = () => loadTrack((currentTrackIndex - 1 + tracks.length) % tracks.length) || audio.play();
+    
+    audio.ontimeupdate = () => {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = percent + '%';
+    };
+
+    audio.onended = () => document.getElementById('next-button').click();
+
+    document.getElementById('seek-container').onclick = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+    };
+
+    function showMsg(m) {
+        statusMsg.innerText = m;
+        statusMsg.classList.add('show');
+        setTimeout(() => statusMsg.classList.remove('show'), 2000);
+    }
+
+    document.getElementById('refresh-tracks-button').onclick = fetchTracks;
+
+    window.onload = fetchTracks;
+</script>
+</body>
+</html>
