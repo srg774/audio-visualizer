@@ -3,22 +3,22 @@
     "title": "Rise", 
     "src": "assets/Rise.wav", 
     "isNew": true, 
-    "gain": 1.5 
+    "gain": 2.0
   },
   { 
     "title": "Horizon", 
     "src": "assets/Horizon6.mp3", 
-    "gain": 1.0 
+    "gain": 1.5 
   },
   { 
     "title": "Michael", 
     "src": "assets/Michael2.wav", 
-    "gain": 1.0 
+    "gain": 1.8
   },
   { 
     "title": "Synthétique", 
     "src": "assets/nuhouse21.mp3", 
-    "gain": 1.0 
+    "gain": 1.5
   }
 ]
 
