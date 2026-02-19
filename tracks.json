@@ -1,6 +1,27 @@
 [
-    { "title": "True", "src": "assets/numixs.mp3", "isNew": true },
-     { "title": "Horizon", "src": "assets/Horizon6.mp3" },
-    { "title": "Michael", "src": "assets/Michael2.wav" },
-    { "title": "Synthétique", "src": "assets/nuhouse21.mp3" }  
+  { 
+    "title": "Rise", 
+    "src": "assets/Rise.wav", 
+    "isNew": true, 
+    "gain": 1.5 
+  },
+  { 
+    "title": "Horizon", 
+    "src": "assets/Horizon6.mp3", 
+    "gain": 1.0 
+  },
+  { 
+    "title": "Michael", 
+    "src": "assets/Michael2.wav", 
+    "gain": 1.0 
+  },
+  { 
+    "title": "Synthétique", 
+    "src": "assets/nuhouse21.mp3", 
+    "gain": 1.0 
+  }
 ]
+#Normal Track	"gain": 1.0	Original volume.
+Slightly Quiet	"gain": 1.5	50% Louder than original.
+Very Quiet	"gain": 2.5	More than double the original volume.
+Too Loud	"gain": 0.7	Pulls the volume back.
