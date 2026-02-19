@@ -21,7 +21,4 @@
     "gain": 1.0 
   }
 ]
-#Normal Track	"gain": 1.0	Original volume.
-Slightly Quiet	"gain": 1.5	50% Louder than original.
-Very Quiet	"gain": 2.5	More than double the original volume.
-Too Loud	"gain": 0.7	Pulls the volume back.
+
