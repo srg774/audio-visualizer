@@ -94,7 +94,6 @@
     let tracks = [];
     let currentTrackIndex = 0;
     
-    // Web Audio API Variables
     let audioCtx;
     let gainNode;
     let source;
@@ -108,7 +107,6 @@
     const pauseSVG = '<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
     const playSVG = '<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 
-    // Initialize the Audio Booster (Runs on first Play click)
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -116,6 +114,20 @@
             source = audioCtx.createMediaElementSource(audio);
             source.connect(gainNode);
             gainNode.connect(audioCtx.destination);
+            setupMediaSession(); // Initialize Bluetooth controls
+        }
+    }
+
+    // --- BLUETOOTH / VEHICLE CONTROL LOGIC ---
+    function setupMediaSession() {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.setActionHandler('play', () => { togglePlay(); });
+            navigator.mediaSession.setActionHandler('pause', () => { togglePlay(); });
+            navigator.mediaSession.setActionHandler('previoustrack', () => { prevTrack(); });
+            navigator.mediaSession.setActionHandler('nexttrack', () => { nextTrack(); });
+            // Optional: seek backward/forward (5 seconds)
+            navigator.mediaSession.setActionHandler('seekbackward', () => { audio.currentTime = Math.max(audio.currentTime - 5, 0); });
+            navigator.mediaSession.setActionHandler('seekforward', () => { audio.currentTime = Math.min(audio.currentTime + 5, audio.duration); });
         }
     }
 
@@ -132,29 +144,35 @@
         const track = tracks[index];
         audio.src = track.src;
         
-        // Update Boost Gain
         const boostValue = track.gain !== undefined ? track.gain : 1.0;
         if (gainNode) {
             gainNode.gain.value = boostValue;
         } else {
-            // Initial load fallback
             audio.volume = Math.min(boostValue, 1.0);
         }
 
         trackDisplay.innerHTML = `<span class="shimmer-effect">${track.title}</span>`;
         if (track.isNew) trackDisplay.innerHTML += ' <small style="color:gold">NEW</small>';
         
+        // Update the Android Notification/Lockscreen/Vehicle Display
         if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({ title: track.title, artist: 'SRG774' });
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: track.title,
+                artist: 'SRG774',
+                album: 'Lite Boosted',
+                artwork: [
+                    { src: 'https://via.placeholder.com/512', sizes: '512x512', type: 'image/png' }
+                ]
+            });
         }
     }
 
     function togglePlay() {
-        initAudio(); // Activate booster
+        initAudio(); 
         if (audioCtx.state === 'suspended') audioCtx.resume();
 
         if (audio.paused) {
-            audio.play();
+            audio.play().catch(e => console.log("Playback failed:", e));
             playPauseBtn.innerHTML = pauseSVG;
         } else {
             audio.pause();
@@ -162,24 +180,35 @@
         }
     }
 
-    playPauseBtn.onclick = togglePlay;
-    
-    document.getElementById('next-button').onclick = () => {
+    function nextTrack() {
         loadTrack((currentTrackIndex + 1) % tracks.length);
-        audio.play().then(() => playPauseBtn.innerHTML = pauseSVG);
-    };
+        audio.play().then(() => playPauseBtn.innerHTML = pauseSVG).catch(() => {});
+    }
 
-    document.getElementById('prev-button').onclick = () => {
+    function prevTrack() {
         loadTrack((currentTrackIndex - 1 + tracks.length) % tracks.length);
-        audio.play().then(() => playPauseBtn.innerHTML = pauseSVG);
-    };
+        audio.play().then(() => playPauseBtn.innerHTML = pauseSVG).catch(() => {});
+    }
+
+    playPauseBtn.onclick = togglePlay;
+    document.getElementById('next-button').onclick = nextTrack;
+    document.getElementById('prev-button').onclick = prevTrack;
     
     audio.ontimeupdate = () => {
         const percent = (audio.currentTime / audio.duration) * 100;
         progressBar.style.width = percent + '%';
+        
+        // Updates position state for vehicle seek bars
+        if ('mediaSession' in navigator && !isNaN(audio.duration)) {
+            navigator.mediaSession.setPositionState({
+                duration: audio.duration,
+                playbackRate: audio.playbackRate,
+                position: audio.currentTime
+            });
+        }
     };
 
-    audio.onended = () => document.getElementById('next-button').click();
+    audio.onended = nextTrack;
 
     document.getElementById('seek-container').onclick = (e) => {
         const rect = e.currentTarget.getBoundingClientRect();
