@@ -1,13 +1,13 @@
 [
   { 
-    "title": "Storm", 
-    "src": "assets/Storm3.mp3", 
+    "title": "Brot", 
+    "src": "assets/Brot.mp3", 
     "isNew": true, 
     "gain": 2.5
   },
   { 
-    "title": "Horizon", 
-    "src": "assets/Horizon6.mp3", 
+    "title": "Storm", 
+    "src": "assets/Storm.mp3", 
     "gain": 1.5 
   },
   { 
