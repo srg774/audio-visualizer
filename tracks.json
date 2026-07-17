@@ -1,7 +1,7 @@
 [
   { 
     "title": "Brot", 
-    "src": "assets/ss.wav", 
+    "src": "assets/f.wav", 
     "isNew": true, 
     "gain": 2.5
   },
