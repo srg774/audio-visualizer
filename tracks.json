@@ -1,9 +1,14 @@
 [
   { 
-    "title": "Brot", 
-    "src": "assets/ss.mp3", 
+    "title": "Dark Wave", 
+    "src": "assets/Lift5.mp3", 
     "isNew": true, 
     "gain": 2.5
+  },
+    { 
+    "title": "Brot", 
+    "src": "assets/ss.mp3", 
+    "gain": 1.5
   },
   { 
     "title": "Storm", 
@@ -14,11 +19,6 @@
     "title": "Michael", 
     "src": "assets/Michael2.wav", 
     "gain": 1.8
-  },
-  { 
-    "title": "981", 
-    "src": "assets/981.mp3", 
-    "gain": 1.5
   }
 ]
 
