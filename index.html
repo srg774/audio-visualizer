@@ -82,7 +82,7 @@
         </div>
     </div>
 
-    <audio id="audio" crossorigin="anonymous" preload="metadata"></audio>
+    <audio id="audio" crossorigin="anonymous" preload="auto"></audio>
 
     <footer>
         <p>SRG774 © | <button id="refresh-tracks-button" style="background:none; border:none; color:cyan; cursor:pointer;">Refresh</button></p>
@@ -93,6 +93,7 @@
 <script>
     let tracks = [];
     let currentTrackIndex = 0;
+    let currentObjectUrl = null;
     
     let audioCtx;
     let gainNode;
@@ -114,7 +115,7 @@
             source = audioCtx.createMediaElementSource(audio);
             source.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-            setupMediaSession(); // Initialize Bluetooth controls
+            setupMediaSession();
         }
     }
 
@@ -125,9 +126,8 @@
             navigator.mediaSession.setActionHandler('pause', () => { togglePlay(); });
             navigator.mediaSession.setActionHandler('previoustrack', () => { prevTrack(); });
             navigator.mediaSession.setActionHandler('nexttrack', () => { nextTrack(); });
-            // Optional: seek backward/forward (5 seconds)
             navigator.mediaSession.setActionHandler('seekbackward', () => { audio.currentTime = Math.max(audio.currentTime - 5, 0); });
-            navigator.mediaSession.setActionHandler('seekforward', () => { audio.currentTime = Math.min(audio.currentTime + 5, audio.duration); });
+            navigator.mediaSession.setActionHandler('seekforward', () => { audio.currentTime = Math.min(audio.currentTime + 5, audio.duration || 0); });
         }
     }
 
@@ -135,15 +135,19 @@
         try {
             const res = await fetch('tracks.json');
             tracks = await res.json();
-            if (tracks.length > 0) loadTrack(0);
+            if (tracks.length > 0) loadTrack(0, false);
         } catch (e) { showMsg("Error loading playlist"); }
     }
 
-    function loadTrack(index) {
+    async function loadTrack(index, shouldPlay = false) {
         currentTrackIndex = index;
         const track = tracks[index];
-        audio.src = track.src;
-        
+
+        // UI Updates
+        trackDisplay.innerHTML = `<span class="shimmer-effect">${track.title}</span>`;
+        if (track.isNew) trackDisplay.innerHTML += ' <small style="color:gold">NEW</small>';
+
+        // Set Boost / Gain Value
         const boostValue = track.gain !== undefined ? track.gain : 1.0;
         if (gainNode) {
             gainNode.gain.value = boostValue;
@@ -151,10 +155,40 @@
             audio.volume = Math.min(boostValue, 1.0);
         }
 
-        trackDisplay.innerHTML = `<span class="shimmer-effect">${track.title}</span>`;
-        if (track.isNew) trackDisplay.innerHTML += ' <small style="color:gold">NEW</small>';
-        
-        // Update the Android Notification/Lockscreen/Vehicle Display
+        // Revoke memory from previous Blob
+        if (currentObjectUrl) {
+            URL.revokeObjectURL(currentObjectUrl);
+            currentObjectUrl = null;
+        }
+
+        showMsg("Buffering full track...");
+
+        try {
+            // Buffer track into RAM
+            const response = await fetch(track.src);
+            if (!response.ok) throw new Error("Network response failed");
+
+            const blob = await response.blob();
+            currentObjectUrl = URL.createObjectURL(blob);
+            audio.src = currentObjectUrl;
+
+            if (shouldPlay) {
+                initAudio();
+                if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+                audio.play().then(() => playPauseBtn.innerHTML = pauseSVG).catch(() => {});
+            }
+        } catch (err) {
+            showMsg("Direct streaming fallback...");
+            // Fallback for CORS or direct source issues
+            audio.src = track.src;
+            if (shouldPlay) {
+                initAudio();
+                if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+                audio.play().then(() => playPauseBtn.innerHTML = pauseSVG).catch(() => {});
+            }
+        }
+
+        // Notification / Lockscreen / Vehicle display update
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: track.title,
@@ -181,13 +215,11 @@
     }
 
     function nextTrack() {
-        loadTrack((currentTrackIndex + 1) % tracks.length);
-        audio.play().then(() => playPauseBtn.innerHTML = pauseSVG).catch(() => {});
+        loadTrack((currentTrackIndex + 1) % tracks.length, true);
     }
 
     function prevTrack() {
-        loadTrack((currentTrackIndex - 1 + tracks.length) % tracks.length);
-        audio.play().then(() => playPauseBtn.innerHTML = pauseSVG).catch(() => {});
+        loadTrack((currentTrackIndex - 1 + tracks.length) % tracks.length, true);
     }
 
     playPauseBtn.onclick = togglePlay;
@@ -195,11 +227,12 @@
     document.getElementById('prev-button').onclick = prevTrack;
     
     audio.ontimeupdate = () => {
-        const percent = (audio.currentTime / audio.duration) * 100;
-        progressBar.style.width = percent + '%';
+        if (audio.duration) {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = percent + '%';
+        }
         
-        // Updates position state for vehicle seek bars
-        if ('mediaSession' in navigator && !isNaN(audio.duration)) {
+        if ('mediaSession' in navigator && audio.duration && !isNaN(audio.duration)) {
             navigator.mediaSession.setPositionState({
                 duration: audio.duration,
                 playbackRate: audio.playbackRate,
@@ -213,7 +246,9 @@
     document.getElementById('seek-container').onclick = (e) => {
         const rect = e.currentTarget.getBoundingClientRect();
         const pos = (e.clientX - rect.left) / rect.width;
-        audio.currentTime = pos * audio.duration;
+        if (audio.duration) {
+            audio.currentTime = pos * audio.duration;
+        }
     };
 
     function showMsg(m) {
