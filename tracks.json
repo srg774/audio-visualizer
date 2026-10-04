@@ -3,12 +3,12 @@
     "title": "Energy", 
     "src": "assets/main.ogg", 
     "isNew": true, 
-    "gain": 2.5
+    "gain": 1.5
   },
       { 
     "title": "NY95", 
     "src": "assets/mix11.wav", 
-    "gain": 1.5
+    "gain": 2.5
   },
     { 
     "title": "DRIFT", 
