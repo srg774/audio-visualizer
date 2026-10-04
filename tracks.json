@@ -5,12 +5,12 @@
     "isNew": true, 
     "gain": 1.5
   },
-      { 
+  { 
     "title": "NY95", 
     "src": "assets/mix11.wav", 
     "gain": 2.5
   },
-    { 
+  { 
     "title": "DRIFT", 
     "src": "assets/eee.mp3", 
     "gain": 1.5
