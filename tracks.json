@@ -1,9 +1,14 @@
 [
   { 
-    "title": "Energy", 
-    "src": "assets/fulltheme.ogg", 
+    "title": "Coney Island", 
+    "src": "assets/ss.mp3", 
     "isNew": true, 
     "gain": 1.5
+  },
+    { 
+    "title": "Energy", 
+    "src": "assets/fulltheme.ogg", 
+    "gain": 2.5
   },
   { 
     "title": "NY95", 
