@@ -1,14 +1,9 @@
 [
-  { 
-    "title": "Crash", 
-    "src": "assets/db.mp3", 
-    "isNew": true, 
-    "gain": 2.5
-  },
     { 
     "title": "Energy", 
+    "isNew": true, 
     "src": "assets/fulltheme.ogg", 
-    "gain": 1.5
+    "gain": 2.0
   },
   { 
     "title": "NY95", 
