@@ -9,7 +9,12 @@
     "title": "NY95", 
     "src": "assets/mix11.wav", 
     "gain": 2.5
-  },
+  },  
+  { 
+    "title": "Impact", 
+    "src": "assets/maste.mp3", 
+    "gain": 1.5
+  },  
   { 
     "title": "Freeway", 
     "src": "assets/test5.mp3", 
