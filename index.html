@@ -30,7 +30,7 @@
             text-align: center;
         }
 
-        h1 { font-size: 1.5rem; margin-bottom: 20px; min-height: 2.5rem; }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; min-height: 2.5rem; padding: 0 15px; }
         .controls { display: flex; gap: 15px; justify-content: center; align-items: center; }
         
         .icon-button {
@@ -38,11 +38,12 @@
             cursor: pointer; width: 50px; height: 50px;
             display: flex; justify-content: center; align-items: center;
             transition: transform 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .icon-button:active { transform: scale(0.9); color: var(--primary-color); }
 
-        .seek-bar-container { width: 80%; max-width: 500px; height: 20px; margin: 20px auto; cursor: pointer; }
+        .seek-bar-container { width: 80%; max-width: 500px; height: 20px; margin: 20px auto; cursor: pointer; display: flex; align-items: center; }
         .seek-bar { width: 100%; height: 6px; background: var(--seek-bar-bg); border-radius: 3px; position: relative; }
         .seek-bar-progress { height: 100%; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color)); width: 0%; border-radius: 3px; }
 
@@ -56,8 +57,8 @@
         @keyframes shimmer { from {background-position: 200% 0;} to {background-position: -200% 0;} }
         
         footer { margin-top: 20px; font-size: 0.8rem; opacity: 0.7; }
-        .status-message { position: fixed; bottom: 20px; background: #333; padding: 8px 15px; border-radius: 5px; display: none; }
-        .status-message.show { display: block; }
+        .status-message { position: fixed; bottom: 20px; background: #333; padding: 8px 15px; border-radius: 5px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        .status-message.show { opacity: 1; }
     </style>
 </head>
 <body>
@@ -65,13 +66,13 @@
     <h1 id="current-track-display">Loading...</h1>
 
     <div class="controls">
-        <button id="prev-button" class="icon-button">
+        <button id="prev-button" class="icon-button" aria-label="Previous Track">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
         </button>
-        <button id="play-pause-button" class="icon-button">
+        <button id="play-pause-button" class="icon-button" aria-label="Play or Pause">
             <svg id="play-icon" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </button>
-        <button id="next-button" class="icon-button">
+        <button id="next-button" class="icon-button" aria-label="Next Track">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
         </button>
     </div>
@@ -82,7 +83,8 @@
         </div>
     </div>
 
-    <audio id="audio" crossorigin="anonymous" preload="auto"></audio>
+    <!-- playsinline helps mobile browsers keep playback steady -->
+    <audio id="audio" crossorigin="anonymous" preload="auto" playsinline></audio>
 
     <footer>
         <p>SRG774 © | <button id="refresh-tracks-button" style="background:none; border:none; color:cyan; cursor:pointer;">Refresh</button></p>
@@ -95,6 +97,12 @@
     let currentTrackIndex = 0;
     let currentObjectUrl = null;
     
+    // Concurrency & Preload controls
+    let currentAbortController = null;
+    let loadRequestId = 0;
+    let preloadedNext = { index: -1, blobUrl: null };
+    let msgTimeout = null;
+
     let audioCtx;
     let gainNode;
     let source;
@@ -117,78 +125,93 @@
             gainNode.connect(audioCtx.destination);
             setupMediaSession();
         }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(() => {});
+        }
     }
 
-    // --- BLUETOOTH / VEHICLE CONTROL LOGIC ---
+    // --- BLUETOOTH / VEHICLE / LOCKSCREEN CONTROL LOGIC ---
     function setupMediaSession() {
         if ('mediaSession' in navigator) {
-            navigator.mediaSession.setActionHandler('play', () => { togglePlay(); });
-            navigator.mediaSession.setActionHandler('pause', () => { togglePlay(); });
-            navigator.mediaSession.setActionHandler('previoustrack', () => { prevTrack(); });
-            navigator.mediaSession.setActionHandler('nexttrack', () => { nextTrack(); });
-            navigator.mediaSession.setActionHandler('seekbackward', () => { audio.currentTime = Math.max(audio.currentTime - 5, 0); });
-            navigator.mediaSession.setActionHandler('seekforward', () => { audio.currentTime = Math.min(audio.currentTime + 5, audio.duration || 0); });
+            navigator.mediaSession.setActionHandler('play', () => {
+                initAudio();
+                audio.play().catch(() => {});
+            });
+            navigator.mediaSession.setActionHandler('pause', () => {
+                audio.pause();
+            });
+            navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+            navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+            navigator.mediaSession.setActionHandler('seekbackward', () => {
+                audio.currentTime = Math.max(audio.currentTime - 5, 0);
+            });
+            navigator.mediaSession.setActionHandler('seekforward', () => {
+                audio.currentTime = Math.min(audio.currentTime + 5, audio.duration || 0);
+            });
         }
     }
 
     async function fetchTracks() {
         try {
-            const res = await fetch('tracks.json');
+            const res = await fetch('tracks.json?t=' + Date.now()); // Avoid stale cache on refresh
             tracks = await res.json();
             if (tracks.length > 0) loadTrack(0, false);
-        } catch (e) { showMsg("Error loading playlist"); }
+        } catch (e) {
+            showMsg("Error loading playlist");
+        }
+    }
+
+    // Background preloader for the upcoming track so autoplay transitions are instant
+    async function preloadNextTrack(nextIndex) {
+        if (tracks.length <= 1 || document.hidden) return;
+        if (preloadedNext.index === nextIndex && preloadedNext.blobUrl) return;
+
+        // Clean up old preload if index changed
+        if (preloadedNext.blobUrl) {
+            URL.revokeObjectURL(preloadedNext.blobUrl);
+            preloadedNext = { index: -1, blobUrl: null };
+        }
+
+        try {
+            const res = await fetch(tracks[nextIndex].src);
+            if (!res.ok) return;
+            const blob = await res.blob();
+            // Ensure we still want this track preloaded
+            if (((currentTrackIndex + 1) % tracks.length) === nextIndex) {
+                preloadedNext = {
+                    index: nextIndex,
+                    blobUrl: URL.createObjectURL(blob)
+                };
+            }
+        } catch (e) {
+            // Silently ignore preload errors; main loader will handle fallback
+        }
     }
 
     async function loadTrack(index, shouldPlay = false) {
+        if (!tracks.length) return;
+
+        // 1. Increment request ID & abort any in-flight download immediately
+        const thisRequestId = ++loadRequestId;
+        if (currentAbortController) {
+            currentAbortController.abort();
+        }
+        currentAbortController = new AbortController();
+
+        // 2. Immediately stop current audio and reset progress bar so toggles feel instant
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.load();
+        progressBar.style.width = '0%';
+        playPauseBtn.innerHTML = shouldPlay ? pauseSVG : playSVG;
+
         currentTrackIndex = index;
         const track = tracks[index];
 
-        // UI Updates
+        // 3. Update UI & Lockscreen Metadata immediately
         trackDisplay.innerHTML = `<span class="shimmer-effect">${track.title}</span>`;
         if (track.isNew) trackDisplay.innerHTML += ' <small style="color:gold">NEW</small>';
 
-        // Set Boost / Gain Value
-        const boostValue = track.gain !== undefined ? track.gain : 1.0;
-        if (gainNode) {
-            gainNode.gain.value = boostValue;
-        } else {
-            audio.volume = Math.min(boostValue, 1.0);
-        }
-
-        // Revoke memory from previous Blob
-        if (currentObjectUrl) {
-            URL.revokeObjectURL(currentObjectUrl);
-            currentObjectUrl = null;
-        }
-
-        showMsg("Buffering full track...");
-
-        try {
-            // Buffer track into RAM
-            const response = await fetch(track.src);
-            if (!response.ok) throw new Error("Network response failed");
-
-            const blob = await response.blob();
-            currentObjectUrl = URL.createObjectURL(blob);
-            audio.src = currentObjectUrl;
-
-            if (shouldPlay) {
-                initAudio();
-                if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-                audio.play().then(() => playPauseBtn.innerHTML = pauseSVG).catch(() => {});
-            }
-        } catch (err) {
-            showMsg("Direct streaming fallback...");
-            // Fallback for CORS or direct source issues
-            audio.src = track.src;
-            if (shouldPlay) {
-                initAudio();
-                if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-                audio.play().then(() => playPauseBtn.innerHTML = pauseSVG).catch(() => {});
-            }
-        }
-
-        // Notification / Lockscreen / Vehicle display update
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: track.title,
@@ -198,55 +221,151 @@
                     { src: 'https://via.placeholder.com/512', sizes: '512x512', type: 'image/png' }
                 ]
             });
+            navigator.mediaSession.playbackState = shouldPlay ? 'playing' : 'paused';
+        }
+
+        // 4. Set Boost / Gain Value
+        const boostValue = track.gain !== undefined ? track.gain : 1.0;
+        if (gainNode) {
+            gainNode.gain.value = boostValue;
+        } else {
+            audio.volume = Math.min(boostValue, 1.0);
+        }
+
+        // Revoke previous active Blob URL
+        if (currentObjectUrl) {
+            URL.revokeObjectURL(currentObjectUrl);
+            currentObjectUrl = null;
+        }
+
+        // Helper to start playback safely
+        const startPlayback = async () => {
+            if (thisRequestId !== loadRequestId) return; // Stale request check
+            if (shouldPlay) {
+                initAudio();
+                try {
+                    await audio.play();
+                } catch (err) {
+                    console.log("Playback interrupted or blocked:", err);
+                    playPauseBtn.innerHTML = playSVG;
+                }
+            }
+            // Preload the next track in line
+            preloadNextTrack((index + 1) % tracks.length);
+        };
+
+        // 5. Check if this track was already preloaded in RAM
+        if (preloadedNext.index === index && preloadedNext.blobUrl) {
+            currentObjectUrl = preloadedNext.blobUrl;
+            preloadedNext = { index: -1, blobUrl: null };
+            audio.src = currentObjectUrl;
+            await startPlayback();
+            return;
+        }
+
+        // 6. ANDROID BACKGROUND FIX:
+        // If screen is off / tab is in background, skip fetch() blobbing and stream natively
+        // so Android doesn't kill the network request during autoplay.
+        if (document.hidden) {
+            audio.src = track.src;
+            await startPlayback();
+            return;
+        }
+
+        showMsg("Loading track...");
+
+        try {
+            const response = await fetch(track.src, { signal: currentAbortController.signal });
+            if (!response.ok) throw new Error("Network response failed");
+
+            const blob = await response.blob();
+            
+            // If user clicked Next/Prev while downloading, discard this blob immediately
+            if (thisRequestId !== loadRequestId) return;
+
+            currentObjectUrl = URL.createObjectURL(blob);
+            audio.src = currentObjectUrl;
+            hideMsg();
+            await startPlayback();
+
+        } catch (err) {
+            if (err.name === 'AbortError') return; // User skipped track; do nothing!
+            if (thisRequestId !== loadRequestId) return;
+
+            // Direct streaming fallback
+            audio.src = track.src;
+            hideMsg();
+            await startPlayback();
         }
     }
 
     function togglePlay() {
-        initAudio(); 
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-
+        initAudio();
         if (audio.paused) {
             audio.play().catch(e => console.log("Playback failed:", e));
-            playPauseBtn.innerHTML = pauseSVG;
         } else {
             audio.pause();
-            playPauseBtn.innerHTML = playSVG;
         }
     }
 
     function nextTrack() {
+        if (!tracks.length) return;
         loadTrack((currentTrackIndex + 1) % tracks.length, true);
     }
 
     function prevTrack() {
+        if (!tracks.length) return;
         loadTrack((currentTrackIndex - 1 + tracks.length) % tracks.length, true);
     }
+
+    // Keep UI icons and MediaSession strictly synced with actual audio state
+    audio.onplay = () => {
+        playPauseBtn.innerHTML = pauseSVG;
+        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+    };
+
+    audio.onpause = () => {
+        playPauseBtn.innerHTML = playSVG;
+        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+    };
+
+    audio.onended = nextTrack;
+
+    // If a stream stalls or errors on mobile, automatically advance after a brief pause
+    audio.onerror = () => {
+        if (audio.getAttribute('src')) {
+            showMsg("Stream error, skipping...");
+            setTimeout(() => {
+                if (audio.error) nextTrack();
+            }, 1500);
+        }
+    };
 
     playPauseBtn.onclick = togglePlay;
     document.getElementById('next-button').onclick = nextTrack;
     document.getElementById('prev-button').onclick = prevTrack;
     
     audio.ontimeupdate = () => {
-        if (audio.duration) {
+        if (audio.duration && !isNaN(audio.duration)) {
             const percent = (audio.currentTime / audio.duration) * 100;
             progressBar.style.width = percent + '%';
-        }
-        
-        if ('mediaSession' in navigator && audio.duration && !isNaN(audio.duration)) {
-            navigator.mediaSession.setPositionState({
-                duration: audio.duration,
-                playbackRate: audio.playbackRate,
-                position: audio.currentTime
-            });
+            
+            if ('mediaSession' in navigator) {
+                try {
+                    navigator.mediaSession.setPositionState({
+                        duration: audio.duration,
+                        playbackRate: audio.playbackRate,
+                        position: audio.currentTime
+                    });
+                } catch (e) {}
+            }
         }
     };
 
-    audio.onended = nextTrack;
-
     document.getElementById('seek-container').onclick = (e) => {
         const rect = e.currentTarget.getBoundingClientRect();
-        const pos = (e.clientX - rect.left) / rect.width;
-        if (audio.duration) {
+        const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        if (audio.duration && !isNaN(audio.duration)) {
             audio.currentTime = pos * audio.duration;
         }
     };
@@ -254,7 +373,12 @@
     function showMsg(m) {
         statusMsg.innerText = m;
         statusMsg.classList.add('show');
-        setTimeout(() => statusMsg.classList.remove('show'), 2000);
+        clearTimeout(msgTimeout);
+        msgTimeout = setTimeout(hideMsg, 2000);
+    }
+
+    function hideMsg() {
+        statusMsg.classList.remove('show');
     }
 
     document.getElementById('refresh-tracks-button').onclick = fetchTracks;
